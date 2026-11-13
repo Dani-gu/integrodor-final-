@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+{% load number_format %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/production.css?v=3"><script src="/static/core/production-plan.js?v=1" defer></script>{% endblock %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_heading %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">PRODUCCIÓN · PLANIFICACIÓN</p><h1>{{ title }}</h1><p class="muted">Revisa el consumo estimado y la disponibilidad antes de guardar el lote.</p></div><a class="button secondary" href="{% if back_args %}{% url back_url back_args.0 %}{% else %}{% url back_url %}{% endif %}">Cancelar</a></div>
+<section class="panel form-panel production-plan-panel">
+  <div class="form-intro"><span class="form-intro-mark" aria-hidden="true">⚙</span><div><h2>Datos del lote</h2><p class="muted">Los campos marcados con <span class="required">*</span> son obligatorios.</p></div></div>
+  <form method="post" class="stack-form">{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert error" role="alert">{{ form.non_field_errors }}</div>{% elif form.errors %}<div class="alert error" role="alert">Revisa los campos señalados antes de guardar.</div>{% endif %}
+    {% for field in form %}<div class="field{% if field.errors %} has-error{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required">*</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<small class="field-error" role="alert">{{ error }}</small>{% endfor %}</div>{% endfor %}
+    <section id="production-plan-preview" class="production-plan-preview" aria-live="polite">
+      <div><p class="eyebrow">REVISIÓN DE MATERIALES</p><h2>Consumo estimado para el plan</h2><p id="production-plan-message" class="muted">Selecciona un producto e indica la cantidad planificada.</p></div>
+      <ul id="production-plan-materials" class="production-plan-materials"></ul>
+      <p id="production-plan-capacity" class="production-plan-capacity" hidden></p>
+      <div id="production-plan-actions" class="production-plan-actions" data-recipe-url-template="{% url 'product_recipe' 0 %}" hidden><a id="production-plan-recipe-link" class="button secondary" href="#">Configurar receta de este producto</a></div>
+      <div id="production-machine-materials" class="production-machine-materials" data-machine-list-url="{% url 'machine_list' %}" hidden></div>
+      <p class="production-plan-note">Esta vista previa no descuenta stock. El sistema volverá a validar las existencias y registrará el consumo real al finalizar el lote.</p>
+    </section>
+    {{ recipe_data|json_script:"production-plan-data" }}
+    {{ machine_data|json_script:"production-machine-data" }}
+    <div class="form-actions"><a class="button secondary" href="{% if back_args %}{% url back_url back_args.0 %}{% else %}{% url back_url %}{% endif %}">Cancelar</a><button class="button primary" type="submit">Guardar lote</button></div>
+  </form>
+</section>
+{% endblock %}

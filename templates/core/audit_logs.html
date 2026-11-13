@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/audit.css?v=2">{% endblock %}
+{% block title %}Logs del sistema{% endblock %}
+{% block page_heading %}Logs del sistema{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">ADMINISTRACIÓN</p><h1>Logs del sistema</h1><p class="muted">Consulta quién realizó cada acción, cuándo ocurrió y qué registro fue afectado.</p></div></div>
+<section class="panel">
+  <form method="get" class="audit-filters">
+    <label>Buscar usuario, cliente, producto o ID<input type="search" name="q" value="{{ search }}" placeholder="Ej.: Admin, cliente, producto o 24"></label>
+    <label>Acción<select name="action"><option value="">Todas las acciones</option>{% for value,label in actions %}<option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Módulo<select name="entity"><option value="">Todos los módulos</option>{% for value,label in entities %}<option value="{{ value }}" {% if selected_entity == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Desde<input type="date" name="desde" value="{{ date_from }}"></label>
+    <label>Hasta<input type="date" name="hasta" value="{{ date_to }}"></label>
+    <div class="audit-filter-actions"><button class="button primary" type="submit">Filtrar</button><a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}export=csv">Descargar CSV</a>{% if search or selected_action or selected_entity or date_from or date_to %}<a class="button secondary" href="{% url 'audit_logs' %}">Limpiar</a>{% endif %}</div>
+  </form>
+  <div class="audit-summary"><span>{{ page_obj.paginator.count }} registro(s)</span><span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></div>
+  <div class="table-wrap"><table class="audit-table"><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>ID registro</th><th>Detalle</th></tr></thead><tbody>
+    {% for log in logs %}<tr><td>{{ log.created_at|date:"d/m/Y H:i:s" }}</td><td>{% if log.actor %}{{ log.actor.get_full_name|default:log.actor.username }}{% elif log.action == "LOGIN_FAILED" %}Acceso no autenticado{% else %}Usuario no disponible{% endif %}</td><td>{{ log.action_label }}</td><td>{{ log.entity_label }}</td><td>{{ log.entity_id|default:"—" }}</td><td class="audit-detail">{{ log.details_label }}</td></tr>
+    {% empty %}<tr><td colspan="6" class="empty-state">No se encontraron acciones registradas.</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if page_obj.has_other_pages %}<nav class="audit-pagination" aria-label="Paginación de logs">
+    {% if page_obj.has_previous %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}
+    <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}
+  </nav>{% endif %}
+</section>
+{% endblock %}

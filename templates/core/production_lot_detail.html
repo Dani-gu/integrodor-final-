@@ -1,0 +1,43 @@
+{% extends "core/base.html" %}
+{% load number_format %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/production.css?v=5">{% endblock %}
+{% block title %}Lote #{{ lot.id|stringformat:"06d" }}{% endblock %}
+{% block page_heading %}Detalle del lote{% endblock %}
+{% block content %}
+<div class="lot-print-header"><strong>MATRIPLAST S.A.</strong><span>Ficha de producción</span><span>Lote #{{ lot.id|stringformat:"06d" }}</span></div>
+<div class="page-title-row lot-detail-heading"><div><p class="eyebrow">PLANTA · TRAZABILIDAD</p><h1>Lote #{{ lot.id|stringformat:"06d" }}</h1><p class="muted">{{ lot.product.name }} · {{ lot.created_at|date:"d/m/Y H:i" }}</p></div><div class="button-row"><button class="button secondary print-lot-action" type="button" onclick="window.print()">Imprimir / Guardar PDF</button><a class="button secondary" href="{% url 'production_list' %}">Volver a lotes</a>{% if not lot.started_at %}<a class="button secondary" href="{% url 'production_update' lot.id %}">Editar lote</a><form method="post" action="{% url 'production_start' lot.id %}">{% csrf_token %}<button class="button primary" type="submit">Iniciar lote</button></form>{% elif not lot.finished_at %}<a class="button primary" href="{% url 'production_finish' lot.id %}">Finalizar lote</a>{% endif %}</div></div>
+
+<section class="production-summary lot-detail-summary" aria-label="Resumen del lote">
+  <article><span>Estado</span><strong><span class="badge {{ status_class }}">{{ status_label }}</span></strong></article>
+  <article><span>Planificado</span><strong>{{ lot.planned_quantity|bo_quantity }} {{ lot.product.unit }}</strong></article>
+  <article><span>Producido</span><strong>{% if lot.produced_quantity != None %}{{ lot.produced_quantity|bo_quantity }} {{ lot.product.unit }}{% else %}—{% endif %}</strong></article>
+  <article><span>Cumplimiento del plan</span><strong>{% if lot.plan_attainment_percentage != None %}{{ lot.plan_attainment_percentage|floatformat:1 }}%{% else %}—{% endif %}</strong></article>
+</section>
+
+<section class="panel lot-movement-panel"><div class="panel-heading"><div><p class="eyebrow">TRAZABILIDAD DE INVENTARIO</p><h2>Movimientos generados por este lote</h2></div><a href="{% url 'inventory_list' %}">Ver inventario →</a></div>
+  {% if inventory_movements %}<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Movimiento</th><th>Producto o insumo</th><th>Cantidad</th><th>Saldo anterior</th><th>Saldo resultante</th><th>Registrado por</th></tr></thead><tbody>
+    {% for movement in inventory_movements %}<tr><td>{{ movement.occurred_at|date:"d/m/Y H:i" }}</td><td>{{ movement.get_kind_display }}</td><td>{{ movement.product.name }}</td><td>{{ movement.quantity|bo_quantity }} {{ movement.product.unit }}</td><td>{% if movement.stock_before != None %}{{ movement.stock_before|bo_quantity }} {{ movement.product.unit }}{% else %}—{% endif %}</td><td>{% if movement.stock_after != None %}{{ movement.stock_after|bo_quantity }} {{ movement.product.unit }}{% else %}—{% endif %}</td><td>{{ movement.recorded_by.get_full_name|default:movement.recorded_by.username }}</td></tr>{% endfor %}
+  </tbody></table></div>{% elif lot.finished_at %}<p class="empty-state">No hay movimientos vinculados a este lote. Los lotes nuevos guardarán aquí sus entradas y consumos.</p>{% else %}<p class="muted">Al finalizar el lote, aquí aparecerán el ingreso del producto terminado y las salidas de materias primas, con sus saldos.</p>{% endif %}
+</section>
+
+<div class="lot-detail-grid">
+  <section class="panel"><p class="eyebrow">DATOS DE PRODUCCIÓN</p><h2>Información del lote</h2><dl class="lot-detail-list">
+    <div><dt>Producto</dt><dd>{{ lot.product.name }} <span class="muted">({{ lot.product.code }})</span></dd></div>
+    <div><dt>Máquina</dt><dd>{{ lot.machine.name|default:"No asignada" }}</dd></div>
+    <div><dt>Operario responsable</dt><dd>{{ lot.operator.get_full_name|default:lot.operator.username|default:"—" }}</dd></div>
+    <div><dt>Fecha de registro</dt><dd>{{ lot.created_at|date:"d/m/Y H:i" }}</dd></div>
+    <div><dt>Inicio</dt><dd>{{ lot.started_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd></div>
+    <div><dt>Finalización</dt><dd>{{ lot.finished_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd></div>
+    {% if lot.production_variance != None %}<div><dt>Variación del plan</dt><dd>{% if lot.production_shortfall %}<span class="below-plan">Faltante {{ lot.production_shortfall|bo_quantity }} {{ lot.product.unit }}</span>{% elif lot.production_excess %}<span class="at-plan">Excedente +{{ lot.production_excess|bo_quantity }} {{ lot.product.unit }}</span>{% else %}Producción exacta{% endif %}</dd></div>{% endif %}
+  </dl></section>
+
+  <section class="panel"><p class="eyebrow">CONSUMO REAL</p><h2>Materias primas</h2>
+    {% if lot.consumptions.all %}<div class="table-wrap"><table><thead><tr><th>Materia prima</th><th>Cantidad consumida</th></tr></thead><tbody>{% for item in lot.consumptions.all %}<tr><td>{{ item.material.name }}</td><td>{{ item.quantity|bo_quantity }} {{ item.material.unit }}</td></tr>{% endfor %}</tbody></table></div>
+    {% elif lot.finished_at %}<p class="empty-state">Este lote se finalizó sin registrar consumo de materias primas.</p>
+    {% else %}<p class="muted">El consumo real se registra al finalizar el lote. La receta del producto puede proponer cantidades para agilizar ese paso.</p>{% endif %}
+  </section>
+</div>
+
+{% if lot.notes %}<section class="panel lot-notes-panel"><p class="eyebrow">NOTAS</p><h2>Observaciones</h2><p>{{ lot.notes|linebreaksbr }}</p></section>{% endif %}
+<p class="lot-print-footer">Registro generado por el sistema interno de MATRIPLAST.</p>
+{% endblock %}

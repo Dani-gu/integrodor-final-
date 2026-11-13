@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% load number_format %}
+{% block title %}Inicio{% endblock %}
+{% block page_heading %}Panel principal{% endblock %}
+{% block content %}
+<div class="dashboard-hero">
+  <div><p class="eyebrow">RESUMEN OPERATIVO · {{ today|date:"l d/m/Y"|capfirst }}</p><h1>Hola, {{ request.user.first_name|default:request.user.username }}</h1><p class="muted">Aquí tienes lo que requiere atención en tus módulos.</p></div>
+  <div class="quick-actions">
+    {% if nav_sales %}<a class="button primary" href="{% url 'order_create' %}">＋ Nuevo pedido</a><a class="button secondary" href="{% url 'sale_create' %}">Registrar venta</a>{% endif %}
+    {% if nav_inventory %}<a class="button secondary" href="{% url 'purchase_create' %}">Registrar compra</a>{% endif %}
+    {% if nav_production %}<a class="button secondary" href="{% url 'production_create' %}">Nuevo lote</a>{% endif %}
+  </div>
+</div>
+<div class="metric-grid operational-metrics">
+  {% if can_view_sales %}<article class="metric-card"><span class="metric-label">Pedidos pendientes</span><strong>{{ pending_orders_count }}</strong><a href="{% url 'order_list' %}">Revisar pedidos →</a></article><article class="metric-card"><span class="metric-label">Ventas por cobrar</span><strong>{{ open_sales_count }}</strong><a href="{% url 'sale_list' %}">Revisar ventas →</a></article>{% endif %}
+  {% if can_view_inventory %}<article class="metric-card {% if low_stock_count %}warning{% endif %}"><span class="metric-label">Alertas de stock</span><strong>{{ low_stock_count }}</strong><a href="{% url 'inventory_report' %}">Ver inventario →</a></article>{% endif %}
+  {% if can_view_production %}<article class="metric-card"><span class="metric-label">Lotes en proceso</span><strong>{{ active_lots_count }}</strong><a href="{% url 'production_list' %}">Ver producción →</a></article>{% endif %}
+</div>
+<section class="panel dashboard-attention">
+  <div class="panel-heading"><div><p class="eyebrow">SEGUIMIENTO</p><h2>Atención prioritaria</h2></div><span class="badge {% if attention_count %}warning{% else %}success{% endif %}">{{ attention_count }} pendiente(s)</span></div>
+  {% if attention_items %}<div class="attention-grid">{% for item in attention_items %}<article class="attention-card {{ item.tone }}"><div><span>{{ item.label }}</span><strong>{{ item.count }}</strong></div><a class="button secondary small" href="{% url item.url %}{{ item.query }}">Revisar →</a></article>{% endfor %}</div>{% else %}<p class="empty-state">Todo está al día en los módulos que puedes consultar.</p>{% endif %}
+</section>
+{% if can_view_sales %}<section class="panel chart-panel dashboard-chart-panel"><div class="panel-heading"><div><p class="eyebrow">TENDENCIA · ÚLTIMOS 6 MESES</p><h2>Ventas y pagos recibidos</h2></div><a href="{% url 'sales_report' %}">Abrir reporte →</a></div><div class="chart-wrap"><svg id="dashboard-sales-chart" class="data-chart" role="img" aria-label="Ventas registradas y pagos recibidos por mes"></svg></div><p class="muted chart-caption">Las ventas muestran el valor de los productos vendidos; los pagos indican el dinero recibido en cada mes.</p></section>{{ dashboard_chart|json_script:"dashboard-sales-chart-data" }}<script src="/static/core/charts.js?v=2"></script>{% endif %}
+<div class="content-grid dashboard-panels">
+  {% if can_view_sales %}<section class="panel"><div class="panel-heading"><div><p class="eyebrow">VENTAS</p><h2>Pedidos pendientes</h2></div><a href="{% url 'order_list' %}">Ver todos</a></div>
+    {% if pending_orders %}<ul class="simple-list">{% for order in pending_orders %}<li><span><strong>Pedido #{{ order.id }} · {{ order.client.name }}</strong><small>{{ order.created_at|date:"d/m/Y H:i" }} · {{ order.items.all|length }} producto(s)</small></span><span class="dashboard-total">Bs {{ order.total|floatformat:2 }}</span></li>{% endfor %}</ul>{% else %}<p class="empty-state">No hay pedidos pendientes.</p>{% endif %}
+  </section>{% endif %}
+  {% if can_view_inventory %}<section class="panel"><div class="panel-heading"><div><p class="eyebrow">ALMACÉN</p><h2>Stock que requiere atención</h2></div><a href="{% url 'inventory_list' %}?stock=low">Ver alertas</a></div>
+    {% if low_stock_products %}<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th><th>Mínimo</th><th>Faltante</th><th>Acción</th></tr></thead><tbody>{% for product in low_stock_products %}<tr><td>{{ product.name }}<small>{{ product.code }}</small></td><td><span class="badge warning">{{ product.current_stock|bo_quantity }} {{ product.unit }}</span></td><td>{{ product.minimum_stock|bo_quantity }} {{ product.unit }}</td><td>{{ product.reorder_quantity|bo_quantity }} {{ product.unit }}</td><td>{% if product.kind == "RAW" %}<a class="button small secondary" href="{% url 'purchase_create' %}?producto={{ product.pk }}&amp;cantidad={{ product.reorder_quantity|bo_quantity }}">Registrar compra</a>{% elif can_view_production %}<a class="button small secondary" href="{% url 'production_create' %}?producto={{ product.pk }}">Planificar lote</a>{% else %}<span class="muted">Consultar producción</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="empty-state">No hay alertas de stock en este momento.</p>{% endif %}
+  </section>{% endif %}
+  {% if can_view_sales %}<section class="panel"><div class="panel-heading"><div><p class="eyebrow">ACTIVIDAD RECIENTE</p><h2>Últimas ventas</h2></div><a href="{% url 'sale_list' %}">Ver todas</a></div>
+    {% if recent_sales %}<div class="table-wrap"><table><thead><tr><th>Venta</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead><tbody>{% for sale in recent_sales %}<tr><td><a href="{% url 'sale_detail' sale.id %}">#{{ sale.id }}</a><small>{{ sale.sold_at|date:"d/m/Y H:i" }}</small></td><td>{{ sale.client.name }}</td><td>Bs {{ sale.total|floatformat:2 }}</td><td><span class="badge">{{ sale.get_status_display }}</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="empty-state">Todavía no hay ventas registradas.</p>{% endif %}
+  </section>{% endif %}
+  {% if can_view_production %}<section class="panel"><div class="panel-heading"><div><p class="eyebrow">PLANTA</p><h2>Lotes en producción</h2></div><a href="{% url 'production_list' %}">Ver lotes</a></div>
+    {% if active_lots %}<ul class="simple-list">{% for lot in active_lots %}<li><span><strong><a href="{% url 'production_lot_detail' lot.id %}">{{ lot.product.name }}</a></strong><small>Lote #{{ lot.id }} · {{ lot.operator.username }} · Plan: {{ lot.planned_quantity|bo_quantity }} {{ lot.product.unit }}</small></span><span class="badge info">En proceso</span></li>{% endfor %}</ul>{% else %}<p class="empty-state">No hay lotes activos.</p>{% endif %}
+  </section>{% endif %}
+</div>
+{% endblock %}

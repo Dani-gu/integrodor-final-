@@ -1,0 +1,524 @@
+.production-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.production-report-metrics {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.production-summary article {
+  display: grid;
+  gap: 7px;
+  padding: 17px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.production-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.production-summary strong {
+  color: var(--ink);
+  font: 700 24px Manrope, 'DM Sans', sans-serif;
+}
+
+.production-filters {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.5fr) minmax(190px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.production-filters label {
+  display: grid;
+  gap: 6px;
+}
+
+.production-filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.production-results-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.consumption-table {
+  min-width: 560px;
+}
+
+.production-overrun-warning {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e4c57f;
+  border-radius: 9px;
+  background: #fff7df;
+  color: #6e4d0c;
+}
+
+.production-plan-preview {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--paper);
+}
+
+.production-plan-preview h2 {
+  margin: 0 0 5px;
+}
+
+.production-plan-preview .eyebrow {
+  margin-bottom: 5px;
+}
+
+.production-plan-preview .muted {
+  font-size: 13px;
+}
+
+.production-plan-preview .has-shortage {
+  color: #a65a12;
+  font-weight: 600;
+}
+
+.production-plan-preview .has-availability {
+  color: #4e7c1e;
+  font-weight: 600;
+}
+
+.production-plan-materials {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.production-plan-materials li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  font-size: 12px;
+}
+
+.production-plan-materials li.is-insufficient strong {
+  color: #a65a12;
+}
+
+.production-plan-materials li.is-available strong {
+  color: #4e7c1e;
+}
+
+.production-plan-capacity {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--green-soft);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.production-plan-actions {
+  margin-top: 1rem;
+}
+
+.production-plan-actions[hidden],
+.production-machine-materials[hidden] {
+  display: none !important;
+}
+
+.production-machine-materials {
+  display: grid;
+  gap: 3px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.production-machine-materials strong {
+  color: var(--ink);
+}
+
+.production-machine-materials .button {
+  align-self: flex-start;
+  margin-top: .25rem;
+}
+
+.production-plan-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.production-overrun-warning[hidden] {
+  display: none !important;
+}
+
+.production-overrun-warning p {
+  margin: 3px 0 9px;
+}
+
+.production-overrun-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:root[data-theme="dark"] .production-overrun-warning {
+  border-color: #876a2b;
+  background: #382f1c;
+  color: #ffe3a0;
+}
+
+:root[data-theme="dark"] .production-plan-preview .has-shortage,
+:root[data-theme="dark"] .production-plan-materials li.is-insufficient strong {
+  color: #f0bd85;
+}
+
+:root[data-theme="dark"] .production-plan-preview .has-availability,
+:root[data-theme="dark"] .production-plan-materials li.is-available strong {
+  color: #a9d889;
+}
+
+@media (max-width: 700px) {
+  .production-plan-materials li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+.consumption-table td:first-child {
+  min-width: 300px;
+}
+
+.consumption-table td:nth-child(2) {
+  min-width: 200px;
+}
+
+.recipe-help-panel {
+  margin: 16px 0;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--green-soft);
+}
+
+.recipe-help-panel strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.recipe-help-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.recipe-stock-preview {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.recipe-capacity-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 14px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+}
+
+.recipe-capacity-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.recipe-capacity-summary strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.production-row-consumption {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.production-row-consumption span {
+  display: block;
+}
+
+.production-yield {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.below-plan {
+  color: #a35b1c;
+}
+
+.at-plan {
+  color: #438327;
+}
+
+.production-row-actions,
+.production-row-actions form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lot-detail-summary article strong {
+  margin-top: 4px;
+}
+
+.lot-detail-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.lot-detail-summary .badge {
+  font: 600 12px 'DM Sans', sans-serif;
+}
+
+.lot-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, .9fr) minmax(360px, 1.1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.lot-detail-grid .panel h2 {
+  margin-bottom: 14px;
+}
+
+.lot-detail-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.lot-detail-list > div {
+  display: grid;
+  grid-template-columns: minmax(130px, .8fr) minmax(0, 1.2fr);
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.lot-detail-list > div:last-child {
+  border-bottom: 0;
+}
+
+.lot-detail-list dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lot-detail-list dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.lot-print-header,
+.lot-print-footer {
+  display: none;
+}
+
+@page {
+  size: A4 landscape;
+  margin: 9mm;
+}
+
+@media print {
+  .app-shell { display: block !important; min-height: 0 !important; }
+  .sidebar,
+  .topbar,
+  .messages,
+  .lot-detail-heading .button-row { display: none !important; }
+  .main-area { width: 100% !important; }
+  .page-content { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .lot-print-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 0 5mm; margin-bottom: 5mm; border-bottom: 2px solid #75b82a; color: #17212b; font-size: 11pt; }
+  .lot-detail-heading { margin: 0 0 5mm !important; }
+  .lot-detail-heading h1 { color: #17212b !important; font-size: 20pt !important; }
+  .lot-detail-heading .eyebrow,
+  .lot-detail-heading .muted { color: #52606d !important; }
+  .production-summary { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 3mm !important; margin-bottom: 5mm !important; }
+  .production-summary article,
+  :root[data-theme="dark"] .production-summary article { background: #fff !important; border-color: #d6dde2 !important; box-shadow: none !important; color: #17212b !important; }
+  .production-summary article > span,
+  .production-summary article strong,
+  :root[data-theme="dark"] .production-summary article > span,
+  :root[data-theme="dark"] .production-summary article strong { color: #17212b !important; }
+  .lot-movement-panel,
+  .lot-detail-grid .panel,
+  .lot-notes-panel { break-inside: avoid-page; }
+  .panel,
+  :root[data-theme="dark"] .panel { background: #fff !important; border-color: #d6dde2 !important; box-shadow: none !important; color: #17212b !important; }
+  .panel h2,
+  .panel p,
+  .panel dt,
+  .panel dd,
+  .panel .muted,
+  :root[data-theme="dark"] .panel h2,
+  :root[data-theme="dark"] .panel p,
+  :root[data-theme="dark"] .panel dt,
+  :root[data-theme="dark"] .panel dd,
+  :root[data-theme="dark"] .panel .muted { color: #17212b !important; }
+  .lot-detail-grid { grid-template-columns: 1fr 1fr !important; gap: 4mm !important; }
+  .table-wrap { overflow: visible !important; }
+  table { width: 100% !important; font-size: 8pt !important; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th, td { padding: 4px 5px !important; }
+  th { background: #edf2e8 !important; color: #344334 !important; }
+  tbody td,
+  :root[data-theme="dark"] tbody td { background: #fff !important; color: #17212b !important; border-color: #d6dde2 !important; }
+  .lot-print-footer { display: block; margin-top: 4mm; color: #52606d !important; font-size: 8pt; text-align: right; }
+}
+
+.stock-hint,
+.stock-warning {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.stock-warning:not([hidden]) {
+  color: #a12d2d;
+  font-weight: 600;
+}
+
+.machine-material-chip {
+  display: inline-flex;
+  margin: 2px 4px 2px 0;
+  padding: 3px 8px;
+  border: 1px solid #e3ebdc;
+  border-radius: 999px;
+  background: #f7faf4;
+  color: #536747;
+  font-size: 11px;
+}
+
+.material-checkbox-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fbfcfa;
+}
+
+.material-checkbox-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.material-checkbox-list input[type="checkbox"] {
+  width: auto;
+  min-height: auto;
+}
+
+.report-filter-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.report-filter-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.report-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 8px;
+}
+
+@media (max-width: 1050px) {
+  .production-report-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .production-summary {
+    gap: 8px;
+  }
+
+  .production-report-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .production-summary article {
+    padding: 12px;
+  }
+
+  .production-summary strong {
+    font-size: 19px;
+  }
+
+  .lot-detail-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .production-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lot-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lot-detail-list > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .production-filters label:first-child,
+  .production-filter-actions {
+    grid-column: 1 / -1;
+  }
+
+  .report-filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .report-filter-actions {
+    grid-column: auto;
+  }
+
+  .material-checkbox-list {
+    grid-template-columns: 1fr;
+  }
+}

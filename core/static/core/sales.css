@@ -1,0 +1,141 @@
+.sale-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(150px, 1fr) repeat(2, minmax(140px, 1fr)) auto auto;
+  align-items: end;
+  max-width: none;
+}
+
+.sale-filters input,
+.sale-filters select {
+  min-width: 0;
+}
+
+.order-filters {
+  display: grid;
+  grid-template-columns: minmax(240px, 2fr) minmax(180px, 1fr) auto auto;
+  align-items: end;
+  max-width: none;
+}
+
+.order-actions {
+  display: grid;
+  gap: 7px;
+  justify-items: start;
+}
+
+.order-confirm-form {
+  display: grid;
+  gap: 6px;
+}
+
+.inline-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #e5ebdf;
+  border-radius: 8px;
+  background: #f8faf6;
+}
+
+.order-confirm-form [hidden] {
+  display: none !important;
+}
+
+.inline-confirm small {
+  flex-basis: 100%;
+  max-width: 230px;
+  color: #596572;
+}
+
+.cancel-sale-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.cancel-sale-form .inline-confirm {
+  max-width: 560px;
+}
+
+.cancel-sale-form [hidden] {
+  display: none !important;
+}
+
+.sale-date-filter {
+  display: grid;
+  gap: 5px;
+  color: #657363;
+  font-size: 11px;
+}
+
+.sale-list-summary {
+  display: flex;
+  justify-content: space-between;
+  margin: 3px 0 12px;
+  color: #6c7884;
+  font-size: 12px;
+}
+
+.sales-summary-metrics {
+  margin: 0 0 16px;
+}
+
+.sales-summary-metrics .metric-card {
+  padding: 14px 16px;
+}
+
+.sales-summary-metrics .metric-card > strong {
+  font-size: 21px;
+}
+
+.sales-summary-note {
+  margin: -6px 0 16px;
+  font-size: 11px;
+}
+
+.sale-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sale-pagination {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  color: #6c7884;
+  font-size: 12px;
+  text-align: center;
+}
+
+.sale-pagination > :last-child {
+  justify-self: end;
+}
+
+@media (max-width: 1100px) {
+  .sale-filters,
+  .order-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sale-filters input[type="search"],
+  .order-filters input[type="search"] {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .sale-filters,
+  .order-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .sale-filters input[type="search"],
+  .order-filters input[type="search"] {
+    grid-column: auto;
+  }
+}

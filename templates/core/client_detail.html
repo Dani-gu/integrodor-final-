@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/client.css?v=2">{% endblock %}
+{% block title %}{{ client.name }}{% endblock %}
+{% block page_heading %}Ficha de cliente{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">VENTAS · CLIENTES</p><h1>{{ client.name }}</h1><p class="muted">{% if client.active %}<span class="badge success">Cliente activo</span>{% else %}<span class="badge">Cliente inactivo</span>{% endif %}</p></div><div class="button-row"><a class="button secondary" href="{% url 'client_list' %}">Volver a clientes</a><a class="button secondary" href="{% url 'client_update' client.id %}">Editar datos</a>{% if client.active %}<a class="button secondary" href="{% url 'order_create' %}?cliente={{ client.id }}">＋ Nuevo pedido</a><a class="button primary" href="{% url 'sale_create' %}?cliente={{ client.id }}">＋ Registrar venta</a>{% endif %}</div></div>
+
+<section class="client-metrics client-profile-metrics" aria-label="Resumen de cuenta del cliente">
+  <article><span>Ventas</span><strong>{{ sales_count }}</strong></article>
+  <article><span>Ventas pendientes o parciales</span><strong>{{ pending_count }}</strong></article>
+  <article><span>Total vendido</span><strong>Bs {{ sold_total|floatformat:2 }}</strong></article>
+  <article><span>Cobrado</span><strong>Bs {{ paid_total|floatformat:2 }}</strong></article>
+  <article class="{% if balance_total > 0 %}client-balance-card{% endif %}"><span>Saldo pendiente actual</span><strong>Bs {{ balance_total|floatformat:2 }}</strong></article>
+</section>
+
+<section class="panel"><div class="client-detail-heading"><div><p class="eyebrow">CONTACTO</p><h2>Datos del cliente</h2></div></div><dl class="client-contact-grid">
+  <div><dt>NIT / documento</dt><dd>{{ client.tax_id|default:"No registrado" }}</dd></div>
+  <div><dt>Teléfono</dt><dd>{{ client.phone|default:"No registrado" }}</dd></div>
+  <div><dt>Correo electrónico</dt><dd>{{ client.email|default:"No registrado" }}</dd></div>
+  <div><dt>Dirección</dt><dd>{{ client.address|default:"No registrada" }}</dd></div>
+</dl></section>
+
+<section class="panel"><div class="client-detail-heading"><div><p class="eyebrow">HISTORIAL</p><h2>Ventas del cliente</h2></div><a href="{% url 'sale_list' %}?q={{ client.name|urlencode }}">Ver en lista de ventas →</a></div>
+  <div class="table-wrap"><table><thead><tr><th>N.º</th><th>Fecha</th><th>Total (Bs)</th><th>Pagado (Bs)</th><th>Saldo (Bs)</th><th>Estado</th><th></th></tr></thead><tbody>
+    {% for sale in sales %}<tr><td><a href="{% url 'sale_detail' sale.id %}">#{{ sale.id|stringformat:"06d" }}</a></td><td>{{ sale.sold_at|date:"d/m/Y H:i" }}</td><td>{{ sale.total|floatformat:2 }}</td><td>{{ sale.amount_paid|floatformat:2 }}</td><td>{% if sale.balance > 0 %}<strong class="client-balance-due">{{ sale.balance|floatformat:2 }}</strong>{% else %}0,00{% endif %}</td><td><span class="badge {% if sale.status == 'PAID' %}success{% elif sale.status == 'PARTIAL' %}info{% elif sale.status == 'OPEN' %}warning{% endif %}">{{ sale.get_status_display }}</span></td><td><a class="button small secondary" href="{% url 'sale_detail' sale.id %}">Ver</a></td></tr>
+    {% empty %}<tr><td colspan="7" class="empty-state">Este cliente todavía no tiene ventas.</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if page_obj.has_other_pages %}<nav class="client-pagination" aria-label="Paginación de ventas del cliente">{% if page_obj.has_previous %}<a class="button secondary" href="?page={{ page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="button secondary" href="?page={{ page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+</section>
+
+<section class="panel"><div class="client-detail-heading"><div><p class="eyebrow">COBRANZAS</p><h2>Pagos recientes</h2></div><a href="{% url 'sale_list' %}?q={{ client.name|urlencode }}">Revisar ventas →</a></div>
+  <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Venta</th><th>Método</th><th>Referencia</th><th>Registrado por</th><th>Monto (Bs)</th></tr></thead><tbody>
+    {% for payment in recent_payments %}<tr><td>{{ payment.paid_at|date:"d/m/Y H:i" }}</td><td><a href="{% url 'sale_detail' payment.sale_id %}">#{{ payment.sale_id|stringformat:"06d" }}</a></td><td>{{ payment.get_method_display }}</td><td>{{ payment.reference|default:"—" }}</td><td>{{ payment.recorded_by.get_full_name|default:payment.recorded_by.username }}</td><td><strong>{{ payment.amount|floatformat:2 }}</strong></td></tr>
+    {% empty %}<tr><td colspan="6" class="empty-state">Todavía no hay pagos registrados para este cliente.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+
+<section class="panel"><div class="client-detail-heading"><div><p class="eyebrow">SOLICITUDES</p><h2>Pedidos recientes</h2></div><a href="{% url 'order_list' %}?q={{ client.name|urlencode }}">Ver pedidos →</a></div>
+  <div class="table-wrap"><table><thead><tr><th>N.º</th><th>Fecha</th><th>Productos</th><th>Total estimado (Bs)</th><th>Estado</th><th></th></tr></thead><tbody>
+    {% for order in recent_orders %}<tr><td>#{{ order.id|stringformat:"06d" }}</td><td>{{ order.created_at|date:"d/m/Y H:i" }}</td><td>{% for item in order.items.all %}{{ item.product.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td><td>{{ order.total|floatformat:2 }}</td><td><span class="badge {% if order.status == 'CONVERTED' %}success{% elif order.status == 'PENDING' %}warning{% endif %}">{{ order.get_status_display }}</span></td><td>{% if order.sale_id %}<a class="button small secondary" href="{% url 'sale_detail' order.sale_id %}">Ver venta</a>{% else %}<a class="button small secondary" href="{% url 'order_list' %}?q={{ client.name|urlencode }}">Ver pedido</a>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="6" class="empty-state">Este cliente todavía no tiene pedidos.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

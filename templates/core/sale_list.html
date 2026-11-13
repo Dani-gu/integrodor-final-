@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/sales.css?v=2">{% endblock %}
+{% block title %}Ventas{% endblock %}
+{% block page_heading %}Ventas y pedidos{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">COMERCIAL</p><h1>Ventas</h1><p class="muted">Busca comprobantes y consulta pagos y saldos pendientes.</p></div><a class="button primary" href="{% url 'sale_create' %}">＋ Registrar venta</a></div>
+<section class="panel">
+  <form method="get" class="toolbar sale-filters">
+    <input type="search" name="q" value="{{ query }}" placeholder="Buscar cliente, producto o número" aria-label="Buscar ventas">
+    <select name="estado" aria-label="Filtrar por estado"><option value="">Todos los estados</option>{% for value,label in sale_statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <label class="sale-date-filter">Desde<input type="date" name="desde" value="{{ date_from }}"></label>
+    <label class="sale-date-filter">Hasta<input type="date" name="hasta" value="{{ date_to }}"></label>
+    <button class="button primary" type="submit">Filtrar</button>
+    {% if query or status or date_from or date_to %}<a class="button secondary" href="{% url 'sale_list' %}">Limpiar</a>{% endif %}
+  </form>
+  <div class="metric-grid sales-summary-metrics"><article class="metric-card"><span class="metric-label">Ventas encontradas</span><strong>{{ sales_count }}</strong></article><article class="metric-card"><span class="metric-label">Total vendido (sin anuladas)</span><strong>Bs {{ sold_total|floatformat:2 }}</strong></article><article class="metric-card"><span class="metric-label">Cobrado en esas ventas</span><strong>Bs {{ paid_total|floatformat:2 }}</strong></article><article class="metric-card"><span class="metric-label">Saldo pendiente actual</span><strong>Bs {{ balance_total|floatformat:2 }}</strong></article></div><p class="muted sales-summary-note">El cobro y el saldo muestran el acumulado actual de las ventas encontradas, aunque los pagos se hayan registrado en otra fecha.</p>
+  <div class="sale-list-summary"><span>{{ page_obj.paginator.count }} venta{{ page_obj.paginator.count|pluralize:"s" }}</span>{% if page_obj.paginator.count %}<span>Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }}</span>{% endif %}</div>
+  <div class="table-wrap"><table><thead><tr><th>N.º</th><th>Cliente</th><th>Fecha</th><th>Total (Bs)</th><th>Pagado</th><th>Saldo</th><th>Estado</th><th>Acción</th></tr></thead><tbody>{% for sale in sales %}<tr><td><a href="{% url 'sale_detail' sale.id %}">#{{ sale.id|stringformat:"06d" }}</a></td><td>{{ sale.client.name }}</td><td>{{ sale.sold_at|date:"d/m/Y H:i" }}</td><td>{{ sale.total|floatformat:2 }}</td><td>{{ sale.amount_paid|floatformat:2 }}</td><td>{{ sale.balance|floatformat:2 }}</td><td><span class="badge {% if sale.status == 'PAID' %}success{% elif sale.status == 'PARTIAL' %}info{% elif sale.status == 'OPEN' %}warning{% endif %}">{{ sale.get_status_display }}</span></td><td><div class="sale-row-actions"><a class="button small secondary" href="{% url 'sale_detail' sale.id %}">Ver</a>{% if sale.balance > 0 %}<a class="button small primary" href="{% url 'payment_add' sale.id %}">Registrar pago</a>{% endif %}</div></td></tr>{% empty %}<tr><td colspan="8" class="empty-state">{% if query or status or date_from or date_to %}No encontramos ventas con esos filtros.{% else %}Todavía no hay ventas registradas.{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+  {% if page_obj.has_other_pages %}<nav class="sale-pagination" aria-label="Paginación de ventas">{% if page_obj.has_previous %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}

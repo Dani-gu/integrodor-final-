@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/client.css?v=1">{% endblock %}
+{% block title %}Clientes{% endblock %}
+{% block page_heading %}Clientes{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">VENTAS</p><h1>Clientes</h1><p class="muted">Consulta y administra los datos de contacto de tus clientes.</p></div><a class="button primary" href="{% url 'client_create' %}">＋ Nuevo cliente</a></div>
+<div class="client-metrics"><article><span>Total de clientes</span><strong>{{ active_count|add:inactive_count }}</strong></article><article><span>Activos</span><strong>{{ active_count }}</strong></article><article><span>Inactivos</span><strong>{{ inactive_count }}</strong></article></div>
+<section class="panel">
+  <form method="get" class="client-filters">
+    <label>Buscar cliente<input type="search" name="q" value="{{ query }}" placeholder="Nombre, NIT/CI, teléfono o correo"></label>
+    <label>Estado<select name="estado"><option value="" {% if not status %}selected{% endif %}>Todos</option><option value="active" {% if status == "active" %}selected{% endif %}>Activos</option><option value="inactive" {% if status == "inactive" %}selected{% endif %}>Inactivos</option></select></label>
+    <div class="client-filter-actions"><button class="button primary" type="submit">Buscar</button>{% if query or status %}<a class="button secondary" href="{% url 'client_list' %}">Limpiar</a>{% endif %}</div>
+  </form>
+  <div class="client-results-summary"><span>{{ page_obj.paginator.count }} cliente{{ page_obj.paginator.count|pluralize:"s" }}</span>{% if page_obj.paginator.count %}<span>Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }}</span>{% endif %}</div>
+  <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>NIT / documento</th><th>Teléfono</th><th>Correo</th><th>Saldo pendiente (Bs)</th><th>Estado</th><th>Acción</th></tr></thead><tbody>
+    {% for client in clients %}<tr><td><a href="{% url 'client_detail' client.id %}"><strong>{{ client.name }}</strong></a>{% if client.address %}<small>{{ client.address }}</small>{% endif %}</td><td>{{ client.tax_id|default:"—" }}</td><td>{{ client.phone|default:"—" }}</td><td>{{ client.email|default:"—" }}</td><td>{% if client.balance_due > 0 %}<strong class="client-balance-due">{{ client.balance_due|floatformat:2 }}</strong>{% else %}0,00{% endif %}</td><td>{% if client.active %}<span class="badge success">Activo</span>{% else %}<span class="badge">Inactivo</span>{% endif %}</td><td><div class="client-row-actions"><a class="button small secondary" href="{% url 'client_detail' client.id %}">Ficha</a><a class="button small secondary" href="{% url 'client_update' client.id %}">Editar</a></div></td></tr>
+    {% empty %}<tr><td colspan="7" class="empty-state">{% if query or status %}No encontramos clientes con esos criterios.{% else %}Aún no hay clientes registrados. Usa “Nuevo cliente” para agregar el primero.{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if page_obj.has_other_pages %}<nav class="client-pagination" aria-label="Paginación de clientes">{% if page_obj.has_previous %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}

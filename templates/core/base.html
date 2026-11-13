@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Matriplast{% endblock %} | Sistema interno</title>
+  <script>try{if(localStorage.getItem("matriplast-theme")==="dark")document.documentElement.dataset.theme="dark";}catch(e){}</script>
+  <link rel="stylesheet" href="/static/core/app.css?v=20261108-guide1">
+  <link rel="stylesheet" href="/static/core/ux.css?v=3">
+  {% block extra_head %}{% endblock %}
+  <link rel="stylesheet" href="/static/core/theme.css?v=4">
+  <script src="/static/core/theme.js?v=1" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark small">M</span><span>MATRIPLAST<small>Sistema interno</small></span></a>
+      <nav class="main-nav">
+        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}><span>⌂</span> Inicio</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'system_guide' %}active{% endif %}" href="{% url 'system_guide' %}" {% if request.resolver_match.url_name == 'system_guide' %}aria-current="page"{% endif %}><span>ⓘ</span> Guía del sistema</a>
+        {% if nav_production %}
+        <div class="nav-heading">PRODUCCIÓN</div>
+        <a class="nav-link {% if request.resolver_match.url_name in 'production_list production_start production_finish production_lot_detail production_update' %}active{% endif %}" href="{% url 'production_list' %}"><span>☷</span> Lotes de producción</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'production_create' %}active{% endif %}" href="{% url 'production_create' %}"><span>＋</span> Nuevo lote</a>
+        <a class="nav-link {% if request.resolver_match.url_name in 'machine_list machine_create machine_update' %}active{% endif %}" href="{% url 'machine_list' %}"><span>⚙</span> Máquinas</a>
+        {% endif %}
+        {% if nav_inventory %}
+        <div class="nav-heading">INVENTARIO</div>
+        <a class="nav-link {% if request.resolver_match.url_name == 'product_list' and request.GET.tipo == 'RAW' or request.resolver_match.url_name == 'product_update' and product.kind == 'RAW' %}active{% endif %}" href="{% url 'product_list' %}?tipo=RAW"><span>▣</span> Materia prima</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'product_list' and request.GET.tipo == 'FINISHED' or request.resolver_match.url_name == 'product_recipe' or request.resolver_match.url_name == 'product_update' and product.kind == 'FINISHED' %}active{% endif %}" href="{% url 'product_list' %}?tipo=FINISHED"><span>▣</span> Productos terminados</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'inventory_list' %}active{% endif %}" href="{% url 'inventory_list' %}"><span>⇄</span> Existencias y movimientos</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'purchase_create' %}active{% endif %}" href="{% url 'purchase_create' %}"><span>＋</span> Registrar compra</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'inventory_adjust' %}active{% endif %}" href="{% url 'inventory_adjust' %}"><span>±</span> Ajustar inventario</a>
+        {% endif %}
+        {% if nav_sales %}
+        <div class="nav-heading">VENTAS</div>
+        <a class="nav-link {% if request.resolver_match.url_name in 'client_list client_create client_update client_detail' %}active{% endif %}" href="{% url 'client_list' %}"><span>♧</span> Clientes</a>
+        <a class="nav-link {% if request.resolver_match.url_name in 'order_list order_create order_convert order_cancel' %}active{% endif %}" href="{% url 'order_list' %}"><span>☷</span> Pedidos</a>
+        <a class="nav-link {% if request.resolver_match.url_name in 'sale_list sale_detail sale_receipt payment_add sale_cancel' %}active{% endif %}" href="{% url 'sale_list' %}"><span>🛒</span> Ventas</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}" href="{% url 'sale_create' %}"><span>＋</span> Registrar venta</a>
+        {% endif %}
+        {% if nav_reports %}
+        <div class="nav-heading">ANÁLISIS</div>
+        <a class="nav-link {% if request.resolver_match.url_name in 'forecasts forecast_generate sales_history_csv_template' %}active{% endif %}" href="{% url 'forecasts' %}"><span>⌁</span> Pronósticos</a>
+        <a class="nav-link {% if request.resolver_match.url_name in 'reports production_report inventory_report sales_report product_cost_report' %}active{% endif %}" href="{% url 'reports' %}"><span>▥</span> Reportes</a>
+        {% if nav_expenses %}<a class="nav-link {% if request.resolver_match.url_name == 'expense_create' %}active{% endif %}" href="{% url 'expense_create' %}"><span>＋</span> Registrar gasto</a>{% endif %}
+        {% endif %}
+        {% if nav_logs %}
+        <div class="nav-heading">ADMINISTRACIÓN</div>
+        <a class="nav-link {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}" href="{% url 'audit_logs' %}"><span>◷</span> Logs del sistema</a>
+        {% endif %}
+        {% if nav_users %}<a class="nav-link {% if request.resolver_match.url_name in 'user_list user_create user_update' %}active{% endif %}" href="{% url 'user_list' %}"><span>♙</span> Usuarios y roles</a>{% endif %}
+      </nav>
+      <div class="sidebar-bottom"><span class="status-dot"></span> Sistema de Matriplast</div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <div><span class="eyebrow">MATRIPLAST S.A.</span><strong>{% block page_heading %}Gestión empresarial{% endblock %}</strong></div>
+        <div class="user-menu"><button class="theme-toggle" type="button" id="theme-toggle" aria-label="Cambiar a tema oscuro" title="Cambiar tema"><span id="theme-toggle-icon" aria-hidden="true">☾</span></button><span class="avatar">{{ request.user.username|slice:":1"|upper }}</span><span>{{ request.user.get_full_name|default:request.user.username }}</span>
+          <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link-button" type="submit">Cerrar sesión</button></form>
+        </div>
+      </header>
+      <section class="page-content">
+        {% if messages %}<div class="messages">{% for message in messages %}<div class="alert {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  </div>
+</body>
+</html>

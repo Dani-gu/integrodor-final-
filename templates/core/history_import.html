@@ -1,0 +1,37 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/forecast.css?v=2">{% endblock %}
+{% block title %}Historial para pronósticos{% endblock %}
+{% block page_heading %}Historial de ventas{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">PRONÓSTICOS</p><h1>¿Tienes ventas anteriores?</h1><p class="muted">Elige la opción que describe tu caso. No necesitas preparar nada si no tienes un archivo.</p></div><a class="button secondary" href="{% url 'forecasts' %}">Volver a pronósticos</a></div>
+
+<section class="history-choice-grid" aria-label="Opciones para completar el historial">
+  <article class="panel history-choice history-choice-primary">
+    <span class="history-choice-number">1</span><div><p class="eyebrow">SÍ TENGO UN ARCHIVO</p><h2>Usa tus ventas anteriores</h2><p>Si tienes un Excel o CSV con ventas de meses pasados, puedes cargarlo aquí para que el sistema las tome en cuenta.</p>
+    <a class="button secondary" href="{% url 'sales_history_csv_template' %}">Descargar archivo de ejemplo</a></div>
+  </article>
+  <article class="panel history-choice">
+    <span class="history-choice-number">2</span><div><p class="eyebrow">NO TENGO UN ARCHIVO</p><h2>Continúa usando el sistema</h2><p>Registra las ventas normalmente. El sistema las guarda y actualizará las proyecciones cuando tenga suficiente historial.</p><a class="button primary" href="{% url 'sale_create' %}">Registrar una venta</a></div>
+  </article>
+</section>
+
+<section class="panel history-howto"><div class="panel-heading"><div><p class="eyebrow">SOLO SI TIENES ARCHIVO</p><h2>¿Qué datos necesito?</h2><p class="muted">La plantilla tiene tres columnas. No hace falta añadir clientes ni precios.</p></div></div>
+  <div class="history-example-wrap"><table class="history-example"><thead><tr><th>Código del producto</th><th>Fecha de venta</th><th>Cantidad vendida</th></tr></thead><tbody><tr><td>Usa el código de la lista de abajo</td><td>15/01/2026</td><td>120</td></tr></tbody></table></div>
+  <p class="history-note">Cada fila representa una venta. La fecha debe ser anterior al mes actual y la cantidad mayor que cero. Este ejemplo es ilustrativo: no lo copies como una venta real.</p>
+  <details class="history-product-details"><summary>Ver códigos de productos terminados</summary><div class="table-wrap"><table><thead><tr><th>Producto</th><th>Código que va en el archivo</th><th>Estado del pronóstico</th></tr></thead><tbody>
+  {% for item in product_history_status %}<tr><td>{{ item.product.name }}</td><td><code>{{ item.product.code }}</code></td><td>{% if item.ready %}<span class="badge success">Ya tiene proyección</span>{% else %}<span class="badge warning">Necesita más historial</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="3" class="empty-state">No hay productos terminados activos.</td></tr>{% endfor %}
+  </tbody></table></div></details>
+  <form method="post" enctype="multipart/form-data" class="stack-form history-upload-form">{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="field"><label for="{{ form.file.id_for_label }}">Selecciona tu archivo CSV</label>{{ form.file }}<small class="help-text">Si tus ventas están en Excel, guárdalo como CSV antes de subirlo.</small>{% for error in form.file.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="form-actions"><button class="button primary" type="submit">Revisar e importar ventas</button></div>
+  </form>
+</section>
+
+<section class="panel history-status-panel"><div class="panel-heading"><div><p class="eyebrow">SITUACIÓN ACTUAL</p><h2>Estado de las proyecciones</h2></div><strong class="history-count">{{ forecast_ready_count }} de {{ finished_product_count }} productos</strong></div><p class="muted">Un producto necesita ventas que cubran 12 meses completos para poder proyectarse. La importación de historial no registra ventas nuevas ni cambia el inventario.</p></section>
+
+<details class="panel history-imports"><summary>Ver archivos cargados anteriormente</summary><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Archivo</th><th>Origen</th><th>Filas</th><th>Período</th><th>Usuario</th></tr></thead><tbody>
+{% for batch in batches %}<tr><td>{{ batch.imported_at|date:"d/m/Y H:i" }}</td><td>{% if batch.is_simulated %}Historial de entrenamiento{% else %}{{ batch.filename }}{% endif %}</td><td>{% if batch.is_simulated %}<span class="badge info">Historial ML</span>{% else %}<span class="badge success">Importado</span>{% endif %}</td><td>{{ batch.row_count }}</td><td>{{ batch.first_date|date:"d/m/Y" }} – {{ batch.last_date|date:"d/m/Y" }}</td><td>{{ batch.imported_by.username }}</td></tr>
+{% empty %}<tr><td colspan="6" class="empty-state">Todavía no se ha cargado ningún archivo.</td></tr>{% endfor %}
+</tbody></table></div></details>
+{% endblock %}

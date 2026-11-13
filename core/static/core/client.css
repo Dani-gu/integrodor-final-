@@ -1,0 +1,154 @@
+.client-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.client-metrics article {
+  display: grid;
+  gap: 7px;
+  padding: 17px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.client-metrics span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.client-metrics strong {
+  color: var(--ink);
+  font: 700 24px Manrope, 'DM Sans', sans-serif;
+}
+
+.client-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.client-filters label {
+  display: grid;
+  gap: 6px;
+}
+
+.client-filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.client-results-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.client-balance-due {
+  color: #a35b1c;
+}
+
+.client-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.client-profile-metrics {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.client-profile-metrics .client-balance-card {
+  background: #fffaf2;
+}
+
+.client-profile-metrics .client-balance-card strong {
+  color: #a35b1c;
+}
+
+.client-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.client-detail-heading h2 {
+  margin: 0;
+}
+
+.client-detail-heading a {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.client-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 22px;
+  margin: 0;
+}
+
+.client-contact-grid > div {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.client-contact-grid dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.client-contact-grid dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.client-pagination {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.client-pagination > :last-child {
+  justify-self: end;
+}
+
+@media (max-width: 700px) {
+  .client-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .client-metrics {
+    gap: 8px;
+  }
+
+  .client-profile-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .client-metrics article {
+    padding: 12px;
+  }
+
+  .client-metrics strong {
+    font-size: 20px;
+  }
+
+  .client-contact-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+{% block title %}Nuevo pedido{% endblock %}
+{% block page_heading %}Nuevo pedido de cliente{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">VENTAS</p><h1>Nuevo pedido</h1><p class="muted">Se comprueba el stock disponible al registrar. El pedido no reserva ni descuenta existencias.</p></div></div>
+<form method="post">{% csrf_token %}{% if form.non_field_errors %}<div class="alert error">{{ form.non_field_errors }}</div>{% endif %}
+  <section class="panel form-panel"><h2>Datos del pedido</h2><div class="form-grid">{% for field in form %}<div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}</div></section>
+  <section class="panel form-panel"><div class="panel-heading"><div><p class="eyebrow">DETALLE</p><h2>Productos solicitados</h2></div><button class="button secondary" type="button" id="add-sale-line">＋ Agregar producto</button></div>{{ line_formset.management_form }}{% if line_formset.non_form_errors %}<div class="alert error">{{ line_formset.non_form_errors }}</div>{% endif %}<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio unitario (Bs)</th><th></th></tr></thead><tbody id="sale-lines">{% for line in line_formset %}<tr class="sale-line"><td>{{ line.product }}{{ line.product.errors }}</td><td>{{ line.quantity }}{{ line.quantity.errors }}</td><td>{{ line.unit_price }}{{ line.unit_price.errors }}</td><td class="remove-cell">{{ line.DELETE }} <button class="remove-line" type="button" aria-label="Quitar producto">Quitar</button></td></tr>{% endfor %}</tbody></table></div>
+    <template id="empty-sale-line"><tr class="sale-line"><td>{{ line_formset.empty_form.product }}</td><td>{{ line_formset.empty_form.quantity }}</td><td>{{ line_formset.empty_form.unit_price }}</td><td class="remove-cell">{{ line_formset.empty_form.DELETE }} <button class="remove-line" type="button" aria-label="Quitar producto">Quitar</button></td></tr></template>
+  </section>
+  <div class="form-actions"><a class="button secondary" href="{% url 'order_list' %}">Cancelar</a><button class="button primary" type="submit">Guardar pedido</button></div>
+</form>
+{{ product_prices|json_script:"sale-product-prices" }}
+<script src="/static/core/sales.js"></script>
+{% endblock %}

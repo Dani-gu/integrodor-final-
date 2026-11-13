@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/sales.css?v=4">{% endblock %}
+{% block title %}Venta #{{ sale.id }}{% endblock %}
+{% block page_heading %}Detalle de venta{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">VENTA #{{ sale.id }}</p><h1>{{ sale.client.name }}</h1><p class="muted">{{ sale.sold_at|date:"d/m/Y H:i" }} · Registrada por {{ sale.created_by.username }}</p></div><div class="button-row"><a class="button secondary" href="{% url 'sale_receipt' sale.id %}">Ver comprobante de venta</a>{% if sale.balance > 0 %}<a class="button primary" href="{% url 'payment_add' sale.id %}">＋ Registrar pago</a>{% endif %}</div></div>
+<div class="content-grid"><section class="panel"><h2>Productos</h2><div class="table-wrap"><table><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio unitario</th><th>Subtotal</th></tr></thead><tbody>{% for item in sale.items.all %}<tr><td>{{ item.product.name }}</td><td>{{ item.quantity }} {{ item.product.unit }}</td><td>Bs {{ item.unit_price|floatformat:2 }}</td><td>Bs {{ item.line_total|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div><div class="totals"><p>Total <strong>Bs {{ sale.total|floatformat:2 }}</strong></p><p>Pagado <strong>Bs {{ sale.amount_paid|floatformat:2 }}</strong></p><p>Saldo <strong>Bs {{ sale.balance|floatformat:2 }}</strong></p></div>{% if request.user.is_superuser or nav_logs %}{% if sale.status == "OPEN" %}<form class="cancel-sale-form" method="post" action="{% url 'sale_cancel' sale.id %}">{% csrf_token %}<label for="cancel_reason">Motivo de anulación</label><textarea id="cancel_reason" name="reason" rows="2" required placeholder="Describe por qué se anula la venta"></textarea><button class="button danger" type="submit" data-cancel-start>Anular venta y devolver stock</button><div class="inline-confirm" data-cancel-confirm hidden><small>Se anulará la venta y se devolverán sus productos al inventario. Esta acción no se puede deshacer desde aquí.</small><button class="button danger" type="submit" data-cancel-final>Confirmar anulación</button><button class="button secondary" type="button" data-cancel-back>Volver</button></div></form>{% endif %}{% endif %}</section>
+<section class="panel"><h2>Pagos</h2>{% if sale.payments.all %}<ul class="simple-list">{% for payment in sale.payments.all %}<li><span><strong>Bs {{ payment.amount|floatformat:2 }} · {{ payment.get_method_display }}</strong><small>{{ payment.paid_at|date:"d/m/Y H:i" }}{% if payment.reference %} · Ref. {{ payment.reference }}{% endif %}</small></span></li>{% empty %}<li class="empty-state">No hay pagos registrados.</li>{% endfor %}</ul>{% endif %}<p><span class="badge">{{ sale.get_status_display }}</span></p></section></div>
+<script>
+  document.querySelectorAll(".cancel-sale-form").forEach((form) => {
+    const startButton = form.querySelector("[data-cancel-start]");
+    const confirmation = form.querySelector("[data-cancel-confirm]");
+    form.addEventListener("submit", (event) => {
+      if (event.submitter && event.submitter.hasAttribute("data-cancel-final")) return;
+      event.preventDefault();
+      startButton.hidden = true;
+      confirmation.hidden = false;
+    });
+    form.querySelector("[data-cancel-back]").addEventListener("click", () => {
+      confirmation.hidden = true;
+      startButton.hidden = false;
+    });
+  });
+</script>
+{% endblock %}

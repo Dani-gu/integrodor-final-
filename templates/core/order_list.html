@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/sales.css?v=3">{% endblock %}
+{% block title %}Pedidos{% endblock %}
+{% block page_heading %}Pedidos de clientes{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">COMERCIAL</p><h1>Pedidos de clientes</h1><p class="muted">Registra solicitudes y conviértelas en venta cuando estén listas para procesarse.</p></div><a class="button primary" href="{% url 'order_create' %}">＋ Nuevo pedido</a></div>
+<section class="panel">
+  <form method="get" class="toolbar order-filters">
+    <input type="search" name="q" value="{{ query }}" placeholder="Buscar cliente, producto o número" aria-label="Buscar pedidos">
+    <select name="estado" aria-label="Filtrar por estado"><option value="">Todos los estados</option>{% for value,label in order_statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <button class="button primary" type="submit">Filtrar</button>
+    {% if query or status %}<a class="button secondary" href="{% url 'order_list' %}">Limpiar</a>{% endif %}
+  </form>
+  <div class="sale-list-summary"><span>{{ page_obj.paginator.count }} pedido{{ page_obj.paginator.count|pluralize:"s" }}</span>{% if page_obj.paginator.count %}<span>Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }}</span>{% endif %}</div>
+  <div class="table-wrap"><table><thead><tr><th>N.º / fecha</th><th>Cliente</th><th>Productos</th><th>Total estimado (Bs)</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+{% for order in orders %}<tr><td>#{{ order.pk|stringformat:"06d" }}<small>{{ order.created_at|date:"d/m/Y H:i" }}</small></td><td>{{ order.client.name }}</td><td>{% for item in order.items.all %}{{ item.product.name }} × {{ item.quantity }}{% if not forloop.last %}<br>{% endif %}{% empty %}—{% endfor %}</td><td>{{ order.total|floatformat:2 }}</td><td><span class="badge {% if order.status == 'PENDING' %}warning{% elif order.status == 'CONVERTED' %}success{% endif %}">{{ order.get_status_display }}</span>{% if order.sale_id %}<small>Venta #{{ order.sale_id|stringformat:"06d" }}</small>{% endif %}</td><td>{% if order.status == "PENDING" %}<div class="order-actions"><form method="post" action="{% url 'order_convert' order.pk %}" class="order-confirm-form">{% csrf_token %}<button class="button primary small" type="submit" data-start>Convertir a venta</button><span class="inline-confirm" hidden><small>Se registrará la venta y se descontará el stock.</small><button class="button primary small" type="submit" data-final>Confirmar</button><button class="button secondary small" type="button" data-cancel>Volver</button></span></form><form method="post" action="{% url 'order_cancel' order.pk %}" class="order-confirm-form">{% csrf_token %}<button class="button secondary small" type="submit" data-start>Cancelar pedido</button><span class="inline-confirm" hidden><small>El pedido quedará cancelado.</small><button class="button primary small" type="submit" data-final>Confirmar</button><button class="button secondary small" type="button" data-cancel>Volver</button></span></form></div>{% elif order.sale_id %}<a href="{% url 'sale_detail' order.sale_id %}">Ver venta</a>{% else %}—{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6" class="empty-state">{% if query or status %}No encontramos pedidos con esos filtros.{% else %}Aún no hay pedidos registrados.{% endif %}</td></tr>{% endfor %}
+</tbody></table></div>
+{% if page_obj.has_other_pages %}<nav class="sale-pagination" aria-label="Paginación de pedidos">{% if page_obj.has_previous %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+  <p class="muted" style="margin-top:16px">Al convertir un pedido, el sistema vuelve a validar el stock y registra la salida como una venta.</p>
+</section>
+<script>
+  document.querySelectorAll(".order-confirm-form").forEach((form) => {
+    const startButton = form.querySelector("[data-start]");
+    const confirmation = form.querySelector(".inline-confirm");
+    form.addEventListener("submit", (event) => {
+      if (event.submitter && event.submitter.hasAttribute("data-final")) return;
+      event.preventDefault();
+      startButton.hidden = true;
+      confirmation.hidden = false;
+    });
+    form.querySelector("[data-cancel]").addEventListener("click", () => {
+      confirmation.hidden = true;
+      startButton.hidden = false;
+    });
+  });
+</script>
+{% endblock %}

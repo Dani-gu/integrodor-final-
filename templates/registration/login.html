@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingresar | Matriplast</title>
+  <link rel="stylesheet" href="/static/core/app.css">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="brand-mark">M</div>
+    <p class="eyebrow">SISTEMA INTERNO</p>
+    <h1>Matriplast</h1>
+    <p class="muted">Ingresa con tu cuenta de la empresa.</p>
+    {% if form.errors %}<div class="alert error">Usuario o contraseña incorrectos.</div>{% endif %}
+    <form method="post" class="stack-form">
+      {% csrf_token %}
+      <label for="id_username">Usuario</label>
+      {{ form.username }}
+      <label for="id_password">Contraseña</label>
+      {{ form.password }}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="button primary full" type="submit">Iniciar sesión</button>
+    </form>
+  </main>
+</body>
+</html>

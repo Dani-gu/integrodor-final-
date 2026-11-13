@@ -1,0 +1,36 @@
+{% extends "core/base.html" %}
+{% load number_format %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/production.css?v=2">{% endblock %}
+{% block title %}Lotes de producción{% endblock %}
+{% block page_heading %}Lotes de producción{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">PLANTA</p><h1>Lotes de producción</h1><p class="muted">Consulta el avance y registra el resultado de cada lote.</p></div><div class="button-row"><a class="button secondary" href="{% url 'machine_list' %}">⚙ Máquinas</a><a class="button primary" href="{% url 'production_create' %}">＋ Nuevo lote</a></div></div>
+
+<section class="production-summary" aria-label="Resumen de lotes">
+  <article><span>Pendientes</span><strong>{{ pending_count }}</strong></article>
+  <article><span>En proceso</span><strong>{{ in_progress_count }}</strong></article>
+  <article><span>Finalizados</span><strong>{{ finished_count }}</strong></article>
+</section>
+
+<section class="panel">
+  <form method="get" class="production-filters">
+    <label>Buscar lote, producto, máquina u operario<input type="search" name="q" value="{{ query }}" placeholder="Ej.: 12, botella o extrusora"></label>
+    <label>Estado<select name="estado"><option value="" {% if not status %}selected{% endif %}>Todos los estados</option><option value="pending" {% if status == "pending" %}selected{% endif %}>Pendiente</option><option value="in_progress" {% if status == "in_progress" %}selected{% endif %}>En proceso</option><option value="finished" {% if status == "finished" %}selected{% endif %}>Finalizado</option></select></label>
+    <div class="production-filter-actions"><button class="button primary" type="submit">Filtrar</button>{% if query or status %}<a class="button secondary" href="{% url 'production_list' %}">Limpiar</a>{% endif %}</div>
+  </form>
+  <div class="production-results-summary"><span>{{ page_obj.paginator.count }} lote{{ page_obj.paginator.count|pluralize:"s" }}</span>{% if page_obj.paginator.count %}<span>Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }}</span>{% endif %}</div>
+  <div class="table-wrap"><table><thead><tr><th>Lote</th><th>Estado</th><th>Producto</th><th>Máquina</th><th>Planificado</th><th>Producido</th><th>Materias primas consumidas</th><th>Operario</th><th>Inicio</th><th>Fin</th><th>Acción</th></tr></thead><tbody>
+    {% for lot in lots %}<tr>
+      <td><a href="{% url 'production_lot_detail' lot.id %}"><strong>#{{ lot.id|stringformat:"06d" }}</strong></a></td>
+      <td>{% if lot.finished_at %}<span class="badge success">Finalizado</span>{% elif lot.started_at %}<span class="badge info">En proceso</span>{% else %}<span class="badge warning">Pendiente</span>{% endif %}</td>
+      <td>{{ lot.product.name }}</td><td>{{ lot.machine.name|default:"—" }}</td>
+      <td>{{ lot.planned_quantity|bo_quantity }} {{ lot.product.unit }}</td>
+      <td>{% if lot.produced_quantity != None %}{{ lot.produced_quantity|bo_quantity }} {{ lot.product.unit }}<small class="production-yield {% if lot.production_shortfall %}below-plan{% else %}at-plan{% endif %}">{% if lot.production_shortfall %}Faltante {{ lot.production_shortfall|bo_quantity }}{% elif lot.production_excess %}Excedente +{{ lot.production_excess|bo_quantity }}{% else %}Al plan{% endif %} · {{ lot.plan_attainment_percentage|floatformat:1 }}% de lo planificado</small>{% else %}—{% endif %}</td>
+      <td class="production-row-consumption">{% for item in lot.consumptions.all %}<span>{{ item.material.name }} · {{ item.quantity|bo_quantity }} {{ item.material.unit }}</span>{% empty %}—{% endfor %}</td>
+      <td>{{ lot.operator.get_full_name|default:lot.operator.username|default:"—" }}</td><td>{{ lot.started_at|date:"d/m/Y H:i"|default:"—" }}</td><td>{{ lot.finished_at|date:"d/m/Y H:i"|default:"—" }}</td>
+      <td><div class="production-row-actions"><a class="button small secondary" href="{% url 'production_lot_detail' lot.id %}">Detalle</a>{% if not lot.started_at %}<a class="button small secondary" href="{% url 'production_update' lot.id %}">Editar</a><form method="post" action="{% url 'production_start' lot.id %}">{% csrf_token %}<button class="button small primary" type="submit">Iniciar</button></form>{% elif not lot.finished_at %}<a class="button small primary" href="{% url 'production_finish' lot.id %}">Finalizar</a>{% endif %}</div></td>
+    </tr>{% empty %}<tr><td colspan="11" class="empty-state">{% if query or status %}No hay lotes que coincidan con la búsqueda.{% else %}No hay lotes registrados todavía. Usa “Nuevo lote” para planificar producción.{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if page_obj.has_other_pages %}<nav class="catalog-pagination" aria-label="Paginación de lotes">{% if page_obj.has_previous %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="button secondary" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}

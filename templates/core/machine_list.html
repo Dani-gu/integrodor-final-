@@ -1,0 +1,9 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/production.css?v=1">{% endblock %}
+{% block title %}Máquinas{% endblock %}
+{% block page_heading %}Máquinas{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">PLANTA</p><h1>Máquinas</h1><p class="muted">Controla la disponibilidad de equipos usados en producción.</p></div><a class="button primary" href="{% url 'machine_create' %}">＋ Registrar máquina</a></div>
+<div class="production-summary"><article><span>Operativas</span><strong>{{ operational_count }}</strong></article><article><span>En mantenimiento</span><strong>{{ maintenance_count }}</strong></article><article><span>Fuera de servicio</span><strong>{{ out_of_service_count }}</strong></article></div>
+<section class="panel"><div class="table-wrap"><table><thead><tr><th>Máquina</th><th>Estado</th><th>Materias primas habituales</th><th>Observaciones</th><th>Acción</th></tr></thead><tbody>{% for machine in machines %}<tr><td><strong>{{ machine.name }}</strong></td><td>{% if machine.status == "OPERATIONAL" %}<span class="badge success">{{ machine.get_status_display }}</span>{% elif machine.status == "MAINTENANCE" %}<span class="badge warning">{{ machine.get_status_display }}</span>{% else %}<span class="badge">{{ machine.get_status_display }}</span>{% endif %}</td><td>{% for material in machine.materials.all %}<span class="machine-material-chip">{{ material.name }}</span>{% empty %}<span class="muted">Sin materiales asociados</span>{% endfor %}</td><td>{{ machine.notes|default:"—" }}</td><td><a class="button small secondary" href="{% url 'machine_update' machine.pk %}">Editar</a></td></tr>{% empty %}<tr><td colspan="5" class="empty-state">Aún no hay máquinas registradas. Puedes agregarlas con “Registrar máquina”.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

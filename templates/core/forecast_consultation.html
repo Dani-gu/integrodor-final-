@@ -1,0 +1,41 @@
+{% extends "core/base.html" %}
+{% load number_format %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/forecast.css?v=5">{% endblock %}
+{% block title %}Consultar predicción{% endblock %}
+{% block page_heading %}Consultar predicción de ventas{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">MACHINE LEARNING</p><h1>Consulta una predicción</h1><p class="muted">Elige un producto y un mes para consultar la proyección basada en las ventas anteriores.</p></div><a class="button secondary" href="{% url 'forecasts' %}">Volver a pronósticos</a></div>
+
+<section class="panel forecast-consult-panel">
+  {% if products and periods %}
+  <form method="get" class="forecast-query-form">
+    <div class="field"><label for="forecast-product">Producto</label><select id="forecast-product" name="producto" required><option value="">Selecciona un producto</option>{% for product in products %}<option value="{{ product.id }}" {% if selected_product_id == product.id|stringformat:"s" %}selected{% endif %}>{{ product.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="forecast-period">Mes de predicción</label><select id="forecast-period" name="mes" required><option value="">Selecciona un mes</option>{% for period in periods %}<option value="{{ period|date:'Y-m-d' }}" {% if selected_period == period|date:'Y-m-d' %}selected{% endif %}>{{ period|date:"F Y"|capfirst }}</option>{% endfor %}</select></div>
+    <button class="button primary" type="submit">Ver predicción</button>
+  </form>
+  {% if selected_forecast %}
+  <section class="forecast-query-result" aria-live="polite" aria-label="Resultado de la predicción">
+    <p class="eyebrow">MÉTODO: {{ selected_forecast.model_name|default:"Machine Learning" }}</p>
+    <h2>{{ selected_forecast.product.name }} · {{ selected_forecast.period|date:"F Y"|capfirst }}</h2>
+    {% if display_quantity == 0 %}<p class="muted">El cálculo no encontró demanda para este mes según el historial analizado.</p>{% endif %}
+    <strong class="forecast-query-quantity">{{ display_quantity|bo_product_quantity:selected_forecast.product.unit }}</strong>
+    <p class="forecast-query-unit">{% if quantity_is_discrete %}unidades estimadas{% else %}cantidad estimada en {{ selected_forecast.product.unit }}{% endif %}</p>
+    <div class="forecast-query-details">
+      <p><span>Rango orientativo</span><strong>{% if reference_min != None %}{{ reference_min|bo_product_quantity:selected_forecast.product.unit }}–{{ reference_max|bo_product_quantity:selected_forecast.product.unit }} {{ selected_forecast.product.unit }}{% else %}No disponible{% endif %}</strong></p>
+      <p><span>Error promedio observado</span><strong>{% if selected_forecast.error_metrics.MAE != None %}{{ selected_forecast.error_metrics.MAE|bo_quantity }} {{ selected_forecast.product.unit }}{% else %}No disponible{% endif %}</strong></p>
+      <p><span>Stock registrado hoy</span><strong>{{ selected_forecast.product.current_stock|bo_product_quantity:selected_forecast.product.unit }} {{ selected_forecast.product.unit }}</strong></p>
+      <p><span>Comparación con la demanda estimada</span><strong>{% if potential_stock_gap > 0 %}Posible faltante: {{ potential_stock_gap|bo_product_quantity:selected_forecast.product.unit }} {{ selected_forecast.product.unit }}{% elif stock_surplus > 0 %}Stock por encima de la proyección: {{ stock_surplus|bo_product_quantity:selected_forecast.product.unit }} {{ selected_forecast.product.unit }}{% else %}Stock igual a la proyección{% endif %}</strong></p>
+      {% if history_months %}<p><span>Período de historial analizado</span><strong>{{ history_months }} meses</strong></p>{% endif %}
+      {% if demand_history %}<p><span>Meses con ventas registradas (últimos 12)</span><strong>{{ demand_history.months_with_sales }} de 12</strong></p><p><span>Meses sin ventas registradas</span><strong>{{ demand_history.months_without_sales }} de 12</strong></p><p><span>Promedio mensual registrado</span><strong>{{ demand_history.average_monthly_sales|bo_product_quantity:selected_forecast.product.unit }} {{ selected_forecast.product.unit }}</strong></p><p><span>Último mes con ventas</span><strong>{% if demand_history.last_sale_month %}{{ demand_history.last_sale_month|date:"F Y"|capfirst }}{% else %}Sin ventas registradas{% endif %}</strong></p>{% endif %}
+      {% if validation_predictions %}<p><span>Comprobación del cálculo</span><strong>{{ validation_predictions }} predicciones anteriores comparadas con ventas reales</strong></p>{% endif %}
+      {% if selected_forecast.product.sale_price != None %}<p><span>Precio actual por unidad</span><strong>Bs {{ selected_forecast.product.sale_price|bo_money }}</strong></p><p><span>Ingreso estimado referencial</span><strong>Bs {{ estimated_revenue|bo_money }}</strong></p>{% endif %}
+    </div>
+    <p class="forecast-query-note">La proyección es una referencia de planificación, no una venta confirmada. El rango se basa en errores de proyecciones anteriores. La comparación toma el stock de hoy y no considera pedidos pendientes, producción programada ni movimientos futuros; no modifica el inventario.</p>
+    {% if potential_stock_gap > 0 and nav_production %}<div class="forecast-production-action"><p>Si decides producir, puedes usar el faltante como cantidad inicial del lote y revisarla antes de guardar.</p><a class="button secondary" href="{% url 'production_create' %}?producto={{ selected_forecast.product_id }}&amp;cantidad={{ potential_stock_gap|floatformat:3 }}">Preparar lote sugerido</a></div>{% endif %}
+  </section>
+  {% else %}<p class="forecast-query-empty">Selecciona el producto y el mes para consultar la proyección.</p>{% endif %}
+  {% else %}
+  <div class="empty-state"><h2>Aún no hay predicciones disponibles</h2><p>Primero se necesita historial suficiente de ventas para calcular proyecciones.</p><a class="button secondary" href="{% url 'forecasts' %}">Ir a pronósticos</a></div>
+  {% endif %}
+</section>
+{% endblock %}

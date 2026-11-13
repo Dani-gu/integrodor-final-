@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101a22">
+  <title>Pronóstico de ventas · Matriplas</title>
+  <style>
+    :root{--ink:#f4f7f8;--muted:#a8bbc5;--bg:#101a22;--panel:#1b2a34;--panel2:#14222b;--line:#344954;--green:#81bd32;--green2:#b4e675;--teal:#19a9b5;--amber:#f1bd54;--red:#f07b72}
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    body{overflow:hidden}
+    button{font:inherit;color:inherit}
+    .top{height:58px;position:fixed;z-index:10;inset:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(18,30,39,.95);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+    .brand{display:flex;align-items:center;gap:11px;font-size:15px;font-weight:750;letter-spacing:.04em}
+    .brand-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--green);color:#102018;font-weight:900}
+    .top-right{display:flex;align-items:center;gap:9px}
+    .tag{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#c9dda9;border:1px solid #52634a;padding:7px 10px;border-radius:99px}
+    .tool{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:8px 13px;cursor:pointer}
+    .tool:hover,.nav button:hover{border-color:var(--green);color:var(--green2)}
+    .stage{height:100%;padding:80px 5.3vw 66px;display:grid;place-items:center}
+    .slide{display:none;position:relative;width:min(100%,1440px);height:min(100%,810px);min-height:0;overflow:hidden;padding:clamp(28px,4vw,64px);border:1px solid #314650;border-radius:24px;background:radial-gradient(ellipse at 87% 3%,rgba(129,189,50,.10),transparent 30%),linear-gradient(140deg,#1b2a34,#14212a 72%);box-shadow:0 24px 85px #0005}
+    .slide.active{display:flex;flex-direction:column;animation:arrive .28s ease-out}
+    @keyframes arrive{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:none}}
+    .eyebrow{margin:0 0 13px;color:var(--green2);font-size:12px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}
+    h1,h2,h3,p{margin-top:0}
+    h1{font-size:clamp(46px,6vw,84px);letter-spacing:-.055em;line-height:.98;max-width:850px;margin-bottom:22px}
+    h2{font-size:clamp(34px,4vw,56px);letter-spacing:-.045em;line-height:1.02;margin:0 0 16px}
+    h3{font-size:clamp(19px,1.65vw,25px);letter-spacing:-.02em;margin:0 0 10px}
+    p{color:#d2dde2;font-size:clamp(16px,1.35vw,20px);line-height:1.48;margin-bottom:15px}
+    .sub{font-size:clamp(19px,1.9vw,27px);color:#b9cbd3;max-width:780px}
+    .foot{position:absolute;bottom:21px;left:clamp(28px,4vw,64px);right:clamp(28px,4vw,64px);display:flex;justify-content:space-between;align-items:center;color:#8299a5;font-size:12px}
+    .foot span:last-child{color:#c8d5da;font-variant-numeric:tabular-nums}
+    .cover{justify-content:center}
+    .cover-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:5vw;align-items:center}
+    .cover .sub{margin-bottom:27px}
+    .cover-meta{color:#8fa7b1;font-size:15px;letter-spacing:.04em}
+    .cover-art{position:relative;min-height:400px;display:grid;place-items:center}
+    .cover-art svg{width:min(100%,500px);height:auto;overflow:visible}
+    .cover-caption{position:absolute;bottom:8%;right:2%;padding:13px 17px;border:1px solid var(--line);border-radius:12px;background:#13212a;color:#d8e3e6;font-size:14px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:center}
+    .big-idea{font-size:clamp(26px,3.15vw,46px);line-height:1.12;letter-spacing:-.035em;font-weight:700}
+    .big-idea em{font-style:normal;color:var(--green2)}
+    .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:26px 0 18px}
+    .flow-step{position:relative;padding:19px 18px 18px 0;min-height:138px;border-top:2px solid var(--green);margin-right:12px}
+    .flow-step:not(:last-child):after{content:"";position:absolute;right:5px;top:-7px;width:12px;height:12px;border-top:2px solid var(--green2);border-right:2px solid var(--green2);transform:rotate(45deg)}
+    .flow-step b{display:block;color:var(--green2);font-size:13px;letter-spacing:.1em;margin-bottom:12px}
+    .flow-step span{font-size:clamp(16px,1.4vw,20px);line-height:1.3;font-weight:650}
+    .example{border-left:3px solid var(--teal);padding:10px 0 10px 18px;color:#bfd0d7;font-size:16px;line-height:1.5}
+    .chart-layout{display:grid;grid-template-columns:1fr .72fr;gap:4vw;align-items:center;min-height:0;flex:1}
+    .chart-wrap{border:1px solid var(--line);border-radius:17px;padding:16px 17px 10px;background:#14222b}
+    .chart-wrap svg{display:block;width:100%;height:auto}
+    .legend{display:flex;gap:22px;color:#c0d0d6;font-size:13px;margin:0 0 7px 8px}
+    .key{display:inline-flex;align-items:center;gap:7px}.swatch{width:18px;height:3px;border-radius:9px;display:inline-block}
+    .readout{border-left:1px solid var(--line);padding:8px 0 8px 25px}
+    .number{font-size:clamp(52px,7vw,92px);letter-spacing:-.06em;line-height:.95;color:var(--green2);font-weight:800;font-variant-numeric:tabular-nums}
+    .number-label{color:#9eb4bf;font-size:15px;margin:8px 0 25px}
+    .statline{display:flex;justify-content:space-between;gap:18px;border-top:1px solid var(--line);padding:12px 0;color:#b6c8d0;font-size:14px}
+    .statline b{color:#f4f7f8;font-variant-numeric:tabular-nums}
+    .table-demo{border-collapse:collapse;width:100%;margin:19px 0 10px;font-size:clamp(14px,1.25vw,18px);font-variant-numeric:tabular-nums}
+    .table-demo th{text-align:left;color:#a5bac4;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:11px 12px;border-bottom:1px solid var(--line)}
+    .table-demo td{padding:12px;border-bottom:1px solid #2c414c;color:#e4ebee}
+    .table-demo tr:last-child td{border-bottom:0}
+    .table-demo td:last-child{color:var(--green2);font-weight:700}
+    .feature-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:4vw;align-items:center;flex:1}
+    .history{display:flex;align-items:end;gap:11px;height:210px;padding:0 7px 25px;border-bottom:1px solid #63808b;position:relative}
+    .history:before,.history:after{content:"";position:absolute;left:0;right:0;border-top:1px solid #2d414b}
+    .history:before{top:33%}.history:after{top:66%}
+    .month{z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:7px}
+    .bar{width:min(45px,75%);min-height:4px;border-radius:7px 7px 2px 2px;background:linear-gradient(0deg,#117982,var(--teal));position:relative}
+    .bar.highlight{background:linear-gradient(0deg,#569222,var(--green2))}
+    .month small{font-size:11px;color:#9bb0bb}
+    .month b{font-size:11px;color:#dbe4e7}
+    .feature-steps{display:grid;gap:10px}
+    .feature{display:grid;grid-template-columns:52px 1fr;gap:13px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line)}
+    .feature-key{width:43px;height:38px;display:grid;place-items:center;border-radius:9px;background:#293e35;color:var(--green2);font-size:14px;font-weight:800}
+    .feature p{font-size:15px;margin:0;color:#b7c9d1}
+    .feature strong{color:#f2f6f7}
+    .model-compare{display:grid;grid-template-columns:.75fr 1.25fr;gap:4vw;align-items:center;flex:1}
+    .model-list{display:grid;gap:12px}
+    .model{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+    .model .idx{font-size:12px;color:var(--green2);font-weight:800}
+    .model p{font-size:15px;margin:0;color:#aebfc7}
+    .model p strong{display:block;color:#f4f7f8;font-size:17px;margin-bottom:2px}
+    .metric-compare{background:#14222b;border:1px solid var(--line);border-radius:15px;padding:21px}
+    .bar-row{display:grid;grid-template-columns:125px 1fr 45px;gap:12px;align-items:center;margin:19px 0;font-size:14px;color:#c2d0d6}
+    .track{height:16px;border-radius:20px;background:#263943;overflow:hidden}
+    .fill{height:100%;border-radius:20px;background:var(--teal)}
+    .fill.best{background:var(--green)}
+    .walk{display:flex;align-items:center;gap:0;margin:31px 0 21px}
+    .tick{height:40px;flex:1;border-bottom:2px solid #506873;position:relative}
+    .tick:before{content:"";position:absolute;bottom:-7px;left:0;width:11px;height:11px;border-radius:50%;background:var(--teal);border:2px solid #14222b}
+    .tick.future{border-bottom-style:dashed;border-color:#62843e}
+    .tick.future:before{background:var(--green2)}
+    .tick-labels{display:grid;grid-template-columns:7fr 4fr;gap:14px;color:#acc0c9;font-size:13px}
+    .tick-labels span:last-child{color:var(--green2)}
+    .metric-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:24px 0}
+    .metric-card{border-top:3px solid var(--teal);padding:18px 13px 0 0}
+    .metric-card:nth-child(2){border-color:var(--green)}.metric-card:nth-child(3){border-color:var(--amber)}
+    .metric-card b{font-size:38px;display:block;letter-spacing:-.04em;margin:0 0 7px}
+    .metric-card p{font-size:15px;color:#b9cbd2}
+    .equation{font-size:clamp(20px,2.4vw,34px);font-weight:700;color:#eaf0f2;background:#14222b;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:13px 0}
+    .equation span{color:var(--green2)}
+    .forecast{display:grid;grid-template-columns:.7fr 1.3fr;gap:4vw;align-items:center;flex:1}
+    .forecast-summary{border-left:3px solid var(--green);padding-left:21px}
+    .forecast-summary .number{font-size:clamp(55px,6vw,78px)}
+    .forecast-chart{border:1px solid var(--line);border-radius:16px;background:#14222b;padding:19px 20px}
+    .forecast-chart svg{width:100%;height:auto;display:block}
+    .reality{display:grid;grid-template-columns:1.05fr .95fr;gap:4vw;align-items:center;flex:1}
+    .reality-list{display:grid;gap:16px}
+    .reality-item{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;color:#d2dde2;line-height:1.4;font-size:16px}
+    .reality-item b{color:var(--green2);font-size:19px}
+    .code{font-family:Consolas,monospace;font-size:clamp(13px,1.3vw,17px);line-height:1.8;color:#cfe6b3;background:#101a22;border:1px solid var(--line);border-radius:14px;padding:22px}
+    .code span{color:#78b7c0}
+    .notes{position:fixed;z-index:20;bottom:74px;left:50%;transform:translateX(-50%);width:min(88vw,900px);display:none;padding:13px 17px;border:1px solid var(--line);border-radius:12px;background:#15232c;color:#d8e1e5;box-shadow:0 12px 40px #0008;font-size:14px;line-height:1.45}
+    .notes.open{display:block}.notes strong{color:var(--green2)}
+    .nav{position:fixed;z-index:10;bottom:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:center;gap:14px;padding:0 20px;background:#101a22ee;border-top:1px solid #2a3d47}
+    .nav button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 13px;cursor:pointer}
+    .counter{min-width:58px;text-align:center;color:#b9c9d0;font-size:13px;font-variant-numeric:tabular-nums}
+    .progress{width:min(25vw,300px);height:4px;background:#2b3e48;border-radius:10px;overflow:hidden}
+    .progress i{height:100%;display:block;background:var(--green);transition:width .25s}
+    @media(max-width:800px){body{overflow:auto}.stage{height:auto;min-height:100%;padding:75px 12px 68px;display:block}.slide,.slide.active{min-height:calc(100vh - 150px);height:auto;padding:30px 24px 65px;border-radius:16px}.cover-grid,.split,.chart-layout,.feature-grid,.model-compare,.forecast,.reality{grid-template-columns:1fr;gap:23px}.cover-art{min-height:230px}.cover-art svg{max-height:250px}.flow{grid-template-columns:repeat(2,1fr);gap:10px}.flow-step{min-height:105px}.flow-step:nth-child(2):after{display:none}.readout{border:0;border-top:1px solid var(--line);padding:20px 0 0}.feature-grid{align-items:start}.history{height:155px}.metric-cards{gap:14px}.metric-card b{font-size:30px}.top{padding:0 12px}.tag{display:none}.foot{font-size:10px}.nav{gap:8px}.progress{width:20vw}}
+    @media print{@page{size:13.333in 7.5in;margin:0}html,body{height:auto;overflow:visible;background:#fff}.top,.nav,.notes{display:none!important}.stage{display:block;padding:0;height:auto}.slide,.slide.active{display:flex!important;width:13.333in;height:7.5in;min-height:0;page-break-after:always;break-after:page;border:0;border-radius:0;box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}.slide:last-child{page-break-after:auto;break-after:auto}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="brand-mark">M</span><span>MATRIPLAST · MACHINE LEARNING</span></div>
+    <div class="top-right"><span class="tag">Exposición del proyecto</span><button class="tool" id="notesButton" type="button" aria-expanded="false">Notas</button><button class="tool" type="button" onclick="window.print()">Imprimir</button></div>
+  </header>
+  <main class="stage" id="deck">
+    <section class="slide cover active" aria-label="Portada">
+      <div class="cover-grid">
+        <div>
+          <p class="eyebrow">Proyecto integrador · La Paz, Bolivia</p>
+          <h1>Pronóstico de ventas con Machine Learning</h1>
+          <p class="sub">Una herramienta para estimar la demanda mensual de los productos de Matriplas y apoyar la planificación.</p>
+          <p class="cover-meta">Exposición técnica · Módulo de análisis de ventas</p>
+        </div>
+        <div class="cover-art" aria-label="Ilustración de demanda, datos y pronóstico">
+          <svg viewBox="0 0 520 430" role="img" aria-label="Una serie mensual avanza hacia un tramo de pronóstico">
+            <circle cx="270" cy="206" r="166" fill="#1c332e" stroke="#405a46" stroke-width="2"/>
+            <circle cx="270" cy="206" r="124" fill="none" stroke="#344b54" stroke-dasharray="4 10"/>
+            <path d="M70 308H460M70 232H460M70 156H460" stroke="#30444e" stroke-width="2"/>
+            <path d="M82 275L132 247L180 259L228 192L276 218L324 147L371 178" fill="none" stroke="#19a9b5" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M371 178L410 153L451 164" fill="none" stroke="#a9df68" stroke-width="8" stroke-dasharray="11 10" stroke-linecap="round" stroke-linejoin="round"/>
+            <g fill="#d9f7f7" stroke="#14222b" stroke-width="5"><circle cx="82" cy="275" r="8"/><circle cx="132" cy="247" r="8"/><circle cx="180" cy="259" r="8"/><circle cx="228" cy="192" r="8"/><circle cx="276" cy="218" r="8"/><circle cx="324" cy="147" r="8"/><circle cx="371" cy="178" r="8"/></g>
+            <g fill="#b9e989" stroke="#14222b" stroke-width="5"><circle cx="410" cy="153" r="8"/><circle cx="451" cy="164" r="8"/></g>
+            <text x="81" y="348" fill="#a8bbc5" font-size="15">HISTORIAL</text><text x="375" y="348" fill="#b9e989" font-size="15">PRONÓSTICO</text>
+            <rect x="175" y="38" width="191" height="51" rx="14" fill="#14222b" stroke="#3a515a"/><text x="204" y="70" fill="#eaf1f2" font-size="18" font-weight="700">Datos → decisión</text>
+          </svg>
+          <div class="cover-caption">La demanda del mes siguiente se estima a partir del historial</div>
+        </div>
+      </div>
+      <div class="foot"><span>Matriplas S.A. · Sistema interno</span><span>01 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Problema">
+      <p class="eyebrow">01 · Necesidad</p><h2>Planificar sin anticipar la demanda es difícil</h2>
+      <div class="split" style="flex:1">
+        <div>
+          <div class="big-idea">Una decisión de producción empieza con una pregunta:<br><em>¿cuánto podríamos vender?</em></div>
+          <p style="margin-top:22px">Producir de menos puede dejar pedidos sin atender. Producir de más puede inmovilizar materia prima y producto terminado.</p>
+        </div>
+        <div>
+          <svg viewBox="0 0 550 330" style="width:100%;height:auto" role="img" aria-label="Inventario disminuye con la demanda y se repone con producción">
+            <path d="M65 275H518M65 40V275" stroke="#79909a" stroke-width="2"/>
+            <path d="M65 98H518M65 186H518" stroke="#30444e" stroke-width="1.5" stroke-dasharray="5 7"/>
+            <path d="M80 72L155 98L230 131L305 158L380 205L455 233L505 251" fill="none" stroke="#f1bd54" stroke-width="5" stroke-linecap="round"/>
+            <path d="M80 130L155 139L230 146L305 157L380 174L455 194L505 211" fill="none" stroke="#19a9b5" stroke-width="5" stroke-linecap="round"/>
+            <text x="82" y="54" fill="#f1bd54" font-size="16" font-weight="700">Sin anticipar: el stock cae</text>
+            <text x="82" y="240" fill="#19c1cb" font-size="16" font-weight="700">Consumo de producto</text>
+            <text x="65" y="309" fill="#a8bbc5" font-size="14">Tiempo y ventas</text>
+          </svg>
+          <div class="example">El pronóstico no reemplaza la experiencia del equipo: agrega una referencia cuantitativa para decidir qué revisar antes de producir.</div>
+        </div>
+      </div>
+      <div class="foot"><span>El problema que aborda el módulo</span><span>02 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Objetivo">
+      <p class="eyebrow">02 · Objetivo</p><h2>Estimar demanda mensual por producto</h2>
+      <p class="sub">El sistema toma ventas históricas, prepara variables y calcula una cantidad para cada mes futuro.</p>
+      <div class="flow">
+        <div class="flow-step"><b>01 · ENTRADA</b><span>Ventas agrupadas por producto y mes</span></div>
+        <div class="flow-step"><b>02 · ANÁLISIS</b><span>Patrones recientes y estacionales</span></div>
+        <div class="flow-step"><b>03 · ESTIMACIÓN</b><span>Unidades probables por período</span></div>
+        <div class="flow-step"><b>04 · USO</b><span>Revisar producción e inventario</span></div>
+      </div>
+      <div class="split" style="margin-top:auto">
+        <div class="example"><strong>Ejemplo de decisión</strong><br>Si la demanda estimada sube, el responsable puede revisar existencias, capacidad de máquina y compras antes de confirmar un plan.</div>
+        <div class="example" style="border-color:var(--amber)"><strong>Alcance</strong><br>El pronóstico orienta. No crea ventas, no genera facturas y no descuenta stock.</div>
+      </div>
+      <div class="foot"><span>Qué entrega el módulo</span><span>03 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Datos">
+      <p class="eyebrow">03 · Datos de entrenamiento</p><h2>Una serie mensual se convierte en ejemplos</h2>
+      <div class="chart-layout">
+        <div>
+          <div class="chart-wrap">
+            <div class="legend"><span class="key"><i class="swatch" style="background:var(--teal)"></i>Unidades mensuales</span></div>
+            <div class="history" aria-label="Barras de demanda de ejemplo">
+              <div class="month"><b>120</b><i class="bar" style="height:42%"></i><small>ENE</small></div>
+              <div class="month"><b>145</b><i class="bar" style="height:51%"></i><small>FEB</small></div>
+              <div class="month"><b>132</b><i class="bar" style="height:46%"></i><small>MAR</small></div>
+              <div class="month"><b>171</b><i class="bar" style="height:60%"></i><small>ABR</small></div>
+              <div class="month"><b>160</b><i class="bar" style="height:56%"></i><small>MAY</small></div>
+              <div class="month"><b>205</b><i class="bar" style="height:72%"></i><small>JUN</small></div>
+              <div class="month"><b>188</b><i class="bar" style="height:66%"></i><small>JUL</small></div>
+              <div class="month"><b>240</b><i class="bar highlight" style="height:84%"></i><small>AGO</small></div>
+            </div>
+            <p class="footnote">Ejemplo didáctico: cantidades ilustrativas para explicar el flujo, no son ventas reportadas.</p>
+          </div>
+        </div>
+        <div class="readout">
+          <h3>¿Qué significa “entrenar”?</h3>
+          <p>El algoritmo busca relaciones entre meses anteriores y la cantidad observada después.</p>
+          <div class="statline"><span>Historial de trabajo</span><b>386 filas</b></div>
+          <div class="statline"><span>Productos en la corrida</span><b>14</b></div>
+          <div class="statline"><span>Ventanas mensuales</span><b>469</b></div>
+          <p class="footnote">Cifras del prototipo consultadas el 11/11/2026. Base de demostración; no representa ventas verificadas de Matriplas.</p>
+        </div>
+      </div>
+      <div class="foot"><span>Una ventana relaciona pasado con el mes siguiente</span><span>04 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Variables">
+      <p class="eyebrow">04 · Variables</p><h2>El modelo mira el contexto reciente</h2>
+      <div class="feature-grid">
+        <div>
+          <h3>Historial de ejemplo</h3>
+          <div class="history">
+            <div class="month"><b>120</b><i class="bar" style="height:42%"></i><small>ENE</small></div>
+            <div class="month"><b>145</b><i class="bar" style="height:51%"></i><small>FEB</small></div>
+            <div class="month"><b>132</b><i class="bar" style="height:46%"></i><small>MAR</small></div>
+            <div class="month"><b>171</b><i class="bar highlight" style="height:60%"></i><small>ABR</small></div>
+          </div>
+          <div class="example">Para estimar abril: el sistema utiliza enero, febrero y marzo; abril es el valor que intenta aprender.</div>
+        </div>
+        <div class="feature-steps">
+          <div class="feature"><span class="feature-key">t−1</span><p><strong>Venta del mes anterior</strong><br>Marzo: 132 unidades</p></div>
+          <div class="feature"><span class="feature-key">t−2</span><p><strong>Venta de hace dos meses</strong><br>Febrero: 145 unidades</p></div>
+          <div class="feature"><span class="feature-key">t−3</span><p><strong>Venta de hace tres meses</strong><br>Enero: 120 unidades</p></div>
+          <div class="feature"><span class="feature-key">μ3</span><p><strong>Promedio móvil reciente</strong><br>(120 + 145 + 132) ÷ 3 = 132,3</p></div>
+          <div class="feature"><span class="feature-key">MES</span><p><strong>Calendario</strong><br>Codificación cíclica para representar el mes del año.</p></div>
+        </div>
+      </div>
+      <div class="foot"><span>Entradas usadas por el modelo actual</span><span>05 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Modelos">
+      <p class="eyebrow">05 · Métodos</p><h2>Se compara Random Forest con referencias simples</h2>
+      <div class="model-compare">
+        <div class="model-list">
+          <div class="model"><span class="idx">01</span><p><strong>Random Forest</strong>Combina árboles que aprenden reglas distintas.</p></div>
+          <div class="model"><span class="idx">02</span><p><strong>Media móvil</strong>Usa el promedio de los últimos tres meses.</p></div>
+          <div class="model"><span class="idx">03</span><p><strong>Suavizado de Holt</strong>Estima nivel y tendencia de la serie.</p></div>
+          <p class="footnote">Los métodos de referencia permiten saber si un modelo complejo realmente aporta.</p>
+        </div>
+        <div class="metric-compare">
+          <h3>Ejemplo de comparación por MAE</h3>
+          <p class="footnote">Menor error promedio significa estimaciones más cercanas en este ejemplo.</p>
+          <div class="bar-row"><span>Random Forest</span><div class="track"><div class="fill best" style="width:42%"></div></div><b>12</b></div>
+          <div class="bar-row"><span>Media móvil</span><div class="track"><div class="fill" style="width:70%"></div></div><b>20</b></div>
+          <div class="bar-row"><span>Holt</span><div class="track"><div class="fill" style="width:91%"></div></div><b>26</b></div>
+          <div class="example">Valores didácticos para explicar el criterio: el programa conserva el método con menor MAE en su validación.</div>
+        </div>
+      </div>
+      <div class="foot"><span>Random Forest no se elige solo por ser más complejo</span><span>06 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Validación">
+      <p class="eyebrow">06 · Validación temporal</p><h2>Para medir, se respeta el orden de las fechas</h2>
+      <p class="sub">El modelo aprende con meses pasados. Después se contrasta con un mes que todavía no había visto.</p>
+      <div class="walk" aria-label="Línea de tiempo de entrenamiento y validación">
+        <i class="tick"></i><i class="tick"></i><i class="tick"></i><i class="tick"></i><i class="tick"></i><i class="tick"></i><i class="tick"></i><i class="tick future"></i><i class="tick future"></i><i class="tick future"></i><i class="tick future"></i>
+      </div>
+      <div class="tick-labels"><span>Meses pasados · entrenamiento</span><span>Mes posterior · validación</span></div>
+      <div class="flow" style="margin-top:42px">
+        <div class="flow-step"><b>ENTRENAR</b><span>Usar únicamente la historia disponible</span></div>
+        <div class="flow-step"><b>PRONOSTICAR</b><span>Estimar el mes siguiente</span></div>
+        <div class="flow-step"><b>COMPARAR</b><span>Revisar contra el valor observado</span></div>
+        <div class="flow-step"><b>REPETIR</b><span>Avanzar en el tiempo y medir otra vez</span></div>
+      </div>
+      <div class="example">La separación temporal evita que meses futuros filtren información al entrenamiento. La base demostrativa sirve para revisar el proceso; no basta para demostrar precisión operativa.</div>
+      <div class="foot"><span>Evaluación adecuada para una serie de tiempo</span><span>07 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Métricas">
+      <p class="eyebrow">07 · Métricas</p><h2>El error se expresa en unidades y porcentaje</h2>
+      <div class="equation">Pronóstico: <span>420</span> unidades &nbsp; · &nbsp; Venta observada: <span>390</span> unidades</div>
+      <div class="metric-cards">
+        <div class="metric-card"><b>MAE</b><h3>Error absoluto medio</h3><p>En este ejemplo, la diferencia es <strong>30 unidades</strong>. El MAE promedia diferencias absolutas.</p></div>
+        <div class="metric-card"><b>RMSE</b><h3>Error cuadrático medio</h3><p>También está en unidades y castiga más los errores grandes.</p></div>
+        <div class="metric-card"><b>MAPE</b><h3>Error porcentual</h3><p>En el ejemplo, 30 ÷ 390 ≈ <strong>7,7%</strong>. No se interpreta igual cuando la venta es cero.</p></div>
+      </div>
+      <div class="example">Cifras didácticas, no métricas verificadas del prototipo. Una métrica más baja solo es útil si se calcula sobre datos que el modelo no utilizó para aprender.</div>
+      <div class="foot"><span>Cómo explicar la calidad de una estimación</span><span>08 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Pronóstico en el sistema">
+      <p class="eyebrow">08 · Resultado</p><h2>Un año de referencia para cada producto</h2>
+      <div class="forecast">
+        <div class="forecast-summary">
+          <p>Ejemplo de consulta</p><h3>Bidón plástico 1 L · Diciembre</h3>
+          <div class="number">420</div><div class="number-label">unidades estimadas · ejemplo didáctico</div>
+          <div class="statline"><span>Período</span><b>12 meses</b></div>
+          <div class="statline"><span>Uso</span><b>Planificación</b></div>
+          <p class="footnote" style="margin-top:17px">El valor mostrado aquí ilustra cómo leer una consulta; no es una predicción real de ventas.</p>
+        </div>
+        <div class="forecast-chart">
+          <h3>Demanda mensual: historia y proyección</h3>
+          <div class="legend"><span class="key"><i class="swatch" style="background:var(--teal)"></i>Historial</span><span class="key"><i class="swatch" style="background:var(--green)"></i>Pronóstico</span></div>
+          <svg viewBox="0 0 650 300" role="img" aria-label="Ejemplo visual de seis meses históricos y seis proyectados">
+            <path d="M56 40V238H622M56 90H622M56 140H622M56 190H622" stroke="#30444e" fill="none"/>
+            <text x="8" y="44" fill="#8fa5af" font-size="12">240</text><text x="15" y="144" fill="#8fa5af" font-size="12">120</text><text x="30" y="242" fill="#8fa5af" font-size="12">0</text>
+            <path d="M75 143L155 126L235 137L315 105L395 115L475 81" fill="none" stroke="#19a9b5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M475 81L545 92L615 71" fill="none" stroke="#81bd32" stroke-width="5" stroke-dasharray="9 8" stroke-linecap="round"/>
+            <g fill="#d9f7f7" stroke="#14222b" stroke-width="3"><circle cx="75" cy="143" r="6"/><circle cx="155" cy="126" r="6"/><circle cx="235" cy="137" r="6"/><circle cx="315" cy="105" r="6"/><circle cx="395" cy="115" r="6"/><circle cx="475" cy="81" r="6"/></g>
+            <g fill="#b9e989" stroke="#14222b" stroke-width="3"><circle cx="545" cy="92" r="6"/><circle cx="615" cy="71" r="6"/></g>
+            <text x="68" y="266" fill="#a8bbc5" font-size="12">JUL</text><text x="148" y="266" fill="#a8bbc5" font-size="12">AGO</text><text x="228" y="266" fill="#a8bbc5" font-size="12">SEP</text><text x="308" y="266" fill="#a8bbc5" font-size="12">OCT</text><text x="388" y="266" fill="#a8bbc5" font-size="12">NOV</text><text x="468" y="266" fill="#a8bbc5" font-size="12">DIC</text><text x="537" y="266" fill="#a8bbc5" font-size="12">ENE</text><text x="606" y="266" fill="#a8bbc5" font-size="12">FEB</text>
+          </svg>
+        </div>
+      </div>
+      <div class="foot"><span>La proyección no modifica existencias ni confirma ventas</span><span>09 / 10</span></div>
+    </section>
+
+    <section class="slide" aria-label="Cierre">
+      <p class="eyebrow">09 · Conclusión</p><h2>Qué aporta y qué falta para usarlo en operación</h2>
+      <div class="reality">
+        <div>
+          <h3>Aporte implementado</h3>
+          <div class="reality-list">
+            <div class="reality-item"><b>✓</b><span>Historial mensual organizado por producto.</span></div>
+            <div class="reality-item"><b>✓</b><span>Comparación de Random Forest con métodos de referencia.</span></div>
+            <div class="reality-item"><b>✓</b><span>Pronóstico de hasta 12 meses para apoyar decisiones.</span></div>
+            <div class="reality-item"><b>→</b><span>Próximo paso: probar con ventas confirmadas y medir cada horizonte por separado.</span></div>
+          </div>
+          <p class="footnote" style="margin-top:20px">El conjunto usado para esta exposición es demostrativo; sus resultados no acreditan la demanda real.</p>
+        </div>
+        <div>
+          <h3>Rutas principales del código</h3>
+          <div class="code"><span>core/forecasting.py</span><br>variables · modelos · proyección<br><br><span>core/views.py</span><br>consulta · gráficas · resultados<br><br><span>core/models.py</span><br>datos y pronósticos guardados<br><br><span>templates/core/</span><br>pantallas del módulo</div>
+        </div>
+      </div>
+      <div class="foot"><span>Gracias · Preguntas</span><span>10 / 10</span></div>
+    </section>
+  </main>
+  <aside id="speakerNotes" class="notes" aria-live="polite"><strong>Apunte para exponer:</strong> <span id="noteText"></span></aside>
+  <nav class="nav" aria-label="Navegación">
+    <button id="prev" type="button">← Anterior</button><span class="counter" id="counter">01 / 10</span><div class="progress"><i id="progressFill" style="width:10%"></i></div><button id="next" type="button">Siguiente →</button>
+  </nav>
+  <script>
+    (function(){
+      var slides=Array.prototype.slice.call(document.querySelectorAll(".slide"));
+      var notes=[
+        "Abre con el propósito: explicar tu aporte de Machine Learning dentro del sistema Matriplas.",
+        "Explica el reto operativo. La estimación es apoyo para decidir; la empresa conserva la decisión final.",
+        "Describe la cadena de entrada a uso. El pronóstico no realiza transacciones ni altera inventario.",
+        "Señala que las barras y la serie son didácticas. Las cifras de estado del prototipo son 386 filas de historial, 14 productos y 469 ventanas de entrenamiento; la base es demostrativa.",
+        "Explica t menos 1, 2 y 3: los meses recientes son entradas y el siguiente mes es el objetivo. El ejemplo de cantidades es ilustrativo.",
+        "Compara sin tecnicismos: Random Forest combina árboles; la media móvil resume datos recientes; Holt modela nivel y tendencia.",
+        "En series de tiempo se entrena con fechas pasadas y se comprueba con fechas posteriores. Aclara que el conjunto demostrativo no prueba precisión operativa.",
+        "MAE se entiende como diferencia media en unidades; RMSE da más peso a errores grandes; MAPE expresa el error en porcentaje. Los números de este ejemplo son didácticos.",
+        "Explica cómo leer una pantalla hipotética. El número y el gráfico son ilustrativos, no datos de ventas de la empresa.",
+        "Resume el aporte y menciona lo que sigue: reunir ventas confirmadas, validar cronológicamente y comparar el error por mes futuro."
+      ];
+      var current=0, counter=document.getElementById("counter"), fill=document.getElementById("progressFill"), notesBox=document.getElementById("speakerNotes"), noteText=document.getElementById("noteText");
+      function show(i){current=Math.max(0,Math.min(slides.length-1,i));slides.forEach(function(s,n){s.classList.toggle("active",n===current);s.setAttribute("aria-hidden",n===current?"false":"true")});counter.textContent=String(current+1).padStart(2,"0")+" / "+String(slides.length).padStart(2,"0");fill.style.width=((current+1)/slides.length*100)+"%";noteText.textContent=notes[current];document.title=slides[current].querySelector("h1,h2").textContent+" · Matriplas"}
+      document.getElementById("prev").addEventListener("click",function(){show(current-1)});
+      document.getElementById("next").addEventListener("click",function(){show(current+1)});
+      document.getElementById("notesButton").addEventListener("click",function(e){var open=notesBox.classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",String(open))});
+      document.addEventListener("keydown",function(e){if(["ArrowRight","PageDown"," "].indexOf(e.key)>=0){e.preventDefault();show(current+1)}else if(["ArrowLeft","PageUp"].indexOf(e.key)>=0){e.preventDefault();show(current-1)}else if(e.key==="Home"){show(0)}else if(e.key==="End"){show(slides.length-1)}});
+      show(0);
+    })();
+  </script>
+</body>
+</html>

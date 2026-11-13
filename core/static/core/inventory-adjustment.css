@@ -1,0 +1,58 @@
+.inventory-adjust-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--green-soft);
+}
+
+.inventory-adjust-preview p {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.inventory-adjust-preview p span,
+.inventory-adjust-preview small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.inventory-adjust-preview p strong {
+  color: var(--ink);
+  font-size: 17px;
+}
+
+.inventory-adjust-sign {
+  color: var(--green-dark);
+  font-weight: 700;
+  text-align: center;
+}
+
+.inventory-adjust-preview small {
+  grid-column: 1 / -1;
+}
+
+.inventory-adjust-preview.has-error {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 12%, var(--paper));
+}
+
+.inventory-adjust-preview.has-error small {
+  color: var(--red);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .inventory-adjust-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-adjust-sign {
+    text-align: left;
+  }
+}

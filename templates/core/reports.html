@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% block title %}Reportes del sistema{% endblock %}
+{% block page_heading %}Reportes del sistema{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">ANÁLISIS</p><h1>Reportes del sistema</h1><p class="muted">Accede a los informes y revisa el resumen operativo del mes.</p></div></div>
+<div class="report-card-grid">
+  {% if production_available %}<article class="report-card"><span class="report-icon green">⚙</span><h2>Reporte de Producción</h2><p>Lotes creados y finalizados, cantidades producidas y lotes en proceso.</p><a class="button primary" href="{% url 'production_report' %}">◉ Ver reporte</a></article>{% endif %}
+  {% if inventory_available %}<article class="report-card"><span class="report-icon green">▣</span><h2>Reporte de Inventario</h2><p>Stock actual, alertas de stock mínimo y movimientos recientes.</p><a class="button primary" href="{% url 'inventory_report' %}">◉ Ver reporte</a></article>{% endif %}
+  <article class="report-card"><span class="report-icon blue">↗</span><h2>Reporte de Ventas</h2><p>Ventas, pagos, saldos pendientes y flujo mensual registrado.</p><a class="button info-button" href="{% url 'sales_report' %}">◉ Ver reporte</a></article>
+  <article class="report-card"><span class="report-icon green">Bs</span><h2>Costos y rentabilidad</h2><p>Estima el costo directo de materiales por unidad y lo compara con el precio de venta.</p><a class="button primary" href="{% url 'product_cost_report' %}">Ver análisis</a></article>
+</div>
+<section class="panel summary-panel"><h2>Resumen general del sistema</h2><div class="metric-grid">
+  <article class="metric-card"><span class="metric-label">Usuarios activos</span><strong>{{ active_users }}</strong></article>
+  <article class="metric-card"><span class="metric-label">Lotes en proceso</span><strong>{{ active_lots }}</strong></article>
+  <article class="metric-card"><span class="metric-label">Alertas de stock</span><strong>{{ low_stock_count }}</strong></article>
+  <article class="metric-card"><span class="metric-label">Ventas del mes</span><strong>Bs {{ monthly_sales|floatformat:2 }}</strong></article>
+</div></section>
+{% endblock %}

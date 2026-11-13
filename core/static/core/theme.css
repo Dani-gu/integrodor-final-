@@ -1,0 +1,240 @@
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --green: #78bd35;
+  --green-dark: #a5d875;
+  --green-soft: #263a2c;
+  --ink: #e5edf3;
+  --muted: #a7b5c2;
+  --line: #344451;
+  --paper: #111a22;
+  --white: #1b2732;
+  --red: #ff8c84;
+  --amber: #edbd69;
+  --shadow: 0 12px 32px rgba(0, 0, 0, .22);
+}
+
+:root[data-theme="dark"] body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .sidebar,
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .metric-card,
+:root[data-theme="dark"] .report-card,
+:root[data-theme="dark"] .summary-panel,
+:root[data-theme="dark"] .summary-panel .metric-card,
+:root[data-theme="dark"] .login-card {
+  background: #1b2732;
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .production-summary article,
+:root[data-theme="dark"] .catalog-metrics article,
+:root[data-theme="dark"] .client-metrics article {
+  background: #1b2732;
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .topbar strong,
+:root[data-theme="dark"] .brand,
+:root[data-theme="dark"] .metric-card > strong,
+:root[data-theme="dark"] .sale-estimate strong,
+:root[data-theme="dark"] h1,
+:root[data-theme="dark"] h2,
+:root[data-theme="dark"] h3,
+:root[data-theme="dark"] label,
+:root[data-theme="dark"] .field label,
+:root[data-theme="dark"] .dashboard-total {
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .brand small,
+:root[data-theme="dark"] .sidebar-bottom,
+:root[data-theme="dark"] .nav-link,
+:root[data-theme="dark"] .link-button,
+:root[data-theme="dark"] .audit-filters label {
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .nav-heading,
+:root[data-theme="dark"] th,
+:root[data-theme="dark"] .summary-panel > h2 {
+  background: #202e39;
+  border-color: var(--line);
+  color: #b4c5d1;
+}
+
+:root[data-theme="dark"] td,
+:root[data-theme="dark"] .simple-list li,
+:root[data-theme="dark"] .form-panel h2 {
+  border-color: #2b3944;
+}
+
+:root[data-theme="dark"] tbody td {
+  background-color: #1b2732;
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] tbody tr:hover td,
+:root[data-theme="dark"] tbody tr:focus-within td {
+  background-color: #263a2c;
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .form-control,
+:root[data-theme="dark"] .form-select,
+:root[data-theme="dark"] input[type="text"],
+:root[data-theme="dark"] input[type="search"],
+:root[data-theme="dark"] input[type="password"],
+:root[data-theme="dark"] input[type="email"],
+:root[data-theme="dark"] input[type="number"],
+:root[data-theme="dark"] input[type="date"],
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select {
+  background: #15212b;
+  color: var(--ink);
+  border-color: #40515e;
+}
+
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder {
+  color: #8596a4;
+}
+
+:root[data-theme="dark"] .button.secondary,
+:root[data-theme="dark"] .theme-toggle {
+  background: #24323e;
+  color: var(--ink);
+  border-color: #40515e;
+}
+
+:root[data-theme="dark"] .button.secondary:hover,
+:root[data-theme="dark"] .theme-toggle:hover {
+  background: #30414e;
+}
+
+:root[data-theme="dark"] .nav-link:hover {
+  background: #263a2c;
+  color: #b4e18c;
+}
+
+:root[data-theme="dark"] .nav-link.active {
+  background: #263a2c;
+  color: #b4e18c;
+}
+
+:root[data-theme="dark"] .badge {
+  background: #33404a;
+  color: #d5e0e7;
+}
+
+:root[data-theme="dark"] .badge.success {
+  background: #29412c;
+  color: #b8e29a;
+}
+
+:root[data-theme="dark"] .badge.warning {
+  background: #4b3a20;
+  color: #f2cc7e;
+}
+
+:root[data-theme="dark"] .badge.info {
+  background: #263e54;
+  color: #acd1f1;
+}
+
+:root[data-theme="dark"] .alert,
+:root[data-theme="dark"] .inventory-explainer {
+  background: #263a2c;
+  color: #c4e8a9;
+  border-color: #3c5940;
+}
+
+:root[data-theme="dark"] .alert.error {
+  background: #472b2d;
+  color: #ffaaa3;
+  border-color: #6b3c3d;
+}
+
+:root[data-theme="dark"] .catalog-stock-alert {
+  background: #42351e;
+  color: #f0cf87;
+  border-color: #66532d;
+}
+
+:root[data-theme="dark"] .dashboard-hero {
+  background: linear-gradient(120deg, #1b2732 0%, #223126 100%);
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .chart-wrap {
+  background: #17232c;
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .chart-label {
+  fill: #b4c2ce;
+}
+
+:root[data-theme="dark"] .chart-gridline {
+  stroke: #35434e;
+}
+
+:root[data-theme="dark"] .sale-estimate {
+  background: #223126;
+  border-color: #3c5940;
+}
+
+:root[data-theme="dark"] .client-profile-metrics .client-balance-card {
+  background: #3b3021;
+}
+
+:root[data-theme="dark"] .catalog-code,
+:root[data-theme="dark"] .machine-material-chip,
+:root[data-theme="dark"] .material-checkbox-list {
+  background: #24323e;
+  border-color: #40515e;
+  color: #d5e0e7;
+}
+
+:root[data-theme="dark"] .below-plan {
+  color: #f0bd85;
+}
+
+:root[data-theme="dark"] .at-plan {
+  color: #a9d889;
+}
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: #526270;
+  font: 600 19px/1 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--green-soft);
+  color: var(--green-dark);
+  transform: rotate(-8deg);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .user-menu .theme-toggle {
+    display: inline-grid;
+  }
+}

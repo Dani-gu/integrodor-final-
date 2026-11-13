@@ -1,0 +1,113 @@
+{% extends "core/base.html" %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/production.css?v=3">{% endblock %}
+{% block title %}Receta de {{ product.name }}{% endblock %}
+{% block page_heading %}Receta de producto{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">PRODUCCIÓN · CONFIGURACIÓN</p><h1>Receta de {{ product.name }}</h1><p class="muted">Define las materias primas necesarias para producir una unidad.</p></div><a class="button secondary" href="{% url 'product_list' %}">Volver al catálogo</a></div>
+<form method="post" class="panel form-panel" id="recipe-form">{% csrf_token %}
+  <div class="form-intro"><span class="form-intro-mark" aria-hidden="true">∑</span><div><h2>Consumo por unidad</h2><p class="muted">Usa la unidad configurada en cada materia prima. Ejemplo: kg por botella, o g por envase.</p></div></div>
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<div class="alert error" role="alert">{{ formset.non_form_errors }}</div>{% endif %}
+  <div class="recipe-help-panel"><strong>Cómo leer el consumo</strong><p>La cantidad indica cuánto material se usa para fabricar una unidad. Puedes usar hasta 6 decimales y omitir ceros finales (10 o 0,015). La disponibilidad estima cuántas unidades alcanzaría a producir cada material por sí solo.</p></div>
+  <div class="recipe-capacity-summary" id="recipe-capacity-summary" data-product-unit="{{ product.unit }}" aria-live="polite"><span>Capacidad estimada con el stock actual</span><strong data-recipe-capacity>Completa la receta para calcularla.</strong></div>
+  <div class="table-wrap"><table class="consumption-table"><thead><tr><th>Materia prima</th><th>Consumo por unidad producida</th><th>Quitar</th></tr></thead><tbody id="recipe-rows">
+    {% for row in formset %}<tr class="recipe-row{% if row.DELETE.value %} is-deleted{% endif %}"><td>{{ row.id }}{{ row.material }}<small class="recipe-stock-preview" data-stock-preview>Selecciona una materia prima para ver su disponibilidad.</small>{% for error in row.material.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</td><td>{{ row.quantity_per_unit }}{% for error in row.quantity_per_unit.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</td><td class="remove-cell">{{ row.DELETE }}<button class="remove-line" type="button">Quitar</button></td></tr>{% endfor %}
+  </tbody></table></div>
+  <template id="empty-recipe-row"><tr class="recipe-row"><td>{{ formset.empty_form.id }}{{ formset.empty_form.material }}<small class="recipe-stock-preview" data-stock-preview>Selecciona una materia prima para ver su disponibilidad.</small></td><td>{{ formset.empty_form.quantity_per_unit }}</td><td class="remove-cell">{{ formset.empty_form.DELETE }}<button class="remove-line" type="button">Quitar</button></td></tr></template>
+  <div class="form-actions"><button class="button secondary" type="button" id="add-recipe-line">＋ Agregar materia prima</button><span class="form-actions-spacer"></span><a class="button secondary" href="{% url 'product_list' %}">Cancelar</a><button class="button primary" type="submit">Guardar receta</button></div>
+</form>
+{{ material_stock_data|json_script:"recipe-material-stock-data" }}
+<script>
+(() => {
+  const rows = document.getElementById("recipe-rows");
+  const total = document.getElementById("id_recipe-TOTAL_FORMS");
+  const template = document.getElementById("empty-recipe-row");
+  const add = document.getElementById("add-recipe-line");
+  if (!rows || !total || !template || !add) return;
+  const stockData = JSON.parse(document.getElementById("recipe-material-stock-data")?.textContent || "{}");
+  const formatter = new Intl.NumberFormat("es-BO", { maximumFractionDigits: 3 });
+  const capacitySummary = document.getElementById("recipe-capacity-summary");
+  const capacityOutput = capacitySummary?.querySelector("[data-recipe-capacity]");
+  const unitLabel = capacitySummary?.dataset.productUnit?.toLowerCase() === "unidad" ? "unidades" : capacitySummary?.dataset.productUnit;
+  const updateCapacity = () => {
+    const activeRows = [...rows.querySelectorAll(".recipe-row")].filter((row) => {
+      const deletion = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      return !row.hidden && !deletion?.checked;
+    });
+    const configuredRows = activeRows.filter((row) => {
+      const material = row.querySelector('select[name$="-material"]')?.value;
+      const quantity = row.querySelector('input[name$="-quantity_per_unit"]')?.value.trim();
+      return material || quantity;
+    });
+    if (!configuredRows.length) {
+      capacityOutput.textContent = "Añade al menos una materia prima.";
+      return;
+    }
+    const capacities = [];
+    for (const row of configuredRows) {
+      const materialField = row.querySelector('select[name$="-material"]');
+      const quantityField = row.querySelector('input[name$="-quantity_per_unit"]');
+      const material = stockData[materialField?.value];
+      const rate = Number((quantityField?.value || "").replace(",", "."));
+      if (!materialField?.value || !material || !(rate > 0)) {
+        capacityOutput.textContent = "Completa cada material y su consumo por unidad.";
+        return;
+      }
+      capacities.push({
+        units: Math.floor(Number(material.stock) / rate),
+        name: materialField.options[materialField.selectedIndex].text,
+      });
+    }
+    const limiting = capacities.reduce((minimum, item) => item.units < minimum.units ? item : minimum);
+    capacityOutput.textContent = `${formatter.format(limiting.units)} ${unitLabel}. Insumo limitante: ${limiting.name}.`;
+  };
+  const updatePreview = (row) => {
+    const materialField = row.querySelector('select[name$="-material"]');
+    const quantityField = row.querySelector('input[name$="-quantity_per_unit"]');
+    const output = row.querySelector("[data-stock-preview]");
+    const material = stockData[materialField?.value];
+    if (!output) return;
+    if (!material) {
+      output.textContent = "Selecciona una materia prima para ver su disponibilidad.";
+      return;
+    }
+    const stock = Number(material.stock);
+    const rate = Number((quantityField?.value || "").replace(",", "."));
+    if (!(rate > 0)) {
+      output.textContent = `Existencia disponible: ${formatter.format(stock)} ${material.unit}. Indica el consumo por unidad para estimar el alcance.`;
+      return;
+    }
+    const possibleUnits = Math.floor(stock / rate);
+    output.textContent = `Disponible: ${formatter.format(stock)} ${material.unit}. Alcanza para aprox. ${formatter.format(possibleUnits)} unidades según este material.`;
+  };
+  rows.querySelectorAll(".recipe-row").forEach(updatePreview);
+  rows.addEventListener("input", (event) => {
+    const row = event.target.closest(".recipe-row");
+    if (row) updatePreview(row);
+  });
+  rows.addEventListener("change", (event) => {
+    const row = event.target.closest(".recipe-row");
+    if (row) updatePreview(row);
+  });
+  add.addEventListener("click", () => {
+    const index = Number(total.value);
+    rows.insertAdjacentHTML("beforeend", template.innerHTML.replaceAll("__prefix__", String(index)));
+    total.value = String(index + 1);
+    const row = rows.querySelector(`#id_recipe-${index}-material`)?.closest(".recipe-row");
+    if (row) updatePreview(row);
+    updateCapacity();
+    row?.querySelector('select[name$="-material"]')?.focus();
+  });
+  rows.addEventListener("click", (event) => {
+    const button = event.target.closest(".remove-line");
+    if (!button) return;
+    const row = button.closest(".recipe-row");
+    const deletion = row?.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (row && deletion) { deletion.checked = true; row.hidden = true; updateCapacity(); }
+  });
+  rows.addEventListener("input", updateCapacity);
+  rows.addEventListener("change", updateCapacity);
+  updateCapacity();
+})();
+</script>
+{% endblock %}

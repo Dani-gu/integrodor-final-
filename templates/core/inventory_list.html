@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% load number_format %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/inventory.css?v=3">{% endblock %}
+{% block title %}Inventario{% endblock %}
+{% block page_heading %}Existencias y movimientos{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">ALMACÉN</p><h1>Existencias y movimientos</h1><p class="muted">Consulta existencias e historial de entradas y salidas.</p></div><div class="button-row"><a class="button secondary" href="{% url 'inventory_adjust' %}">± Ajustar stock</a><a class="button primary" href="{% url 'purchase_create' %}">＋ Registrar compra</a></div></div>
+<section class="panel">
+  <p class="inventory-explainer"><strong>Cómo leer el stock:</strong> el mínimo es el umbral de alerta. “Faltante” indica cuánto falta para llegar a ese nivel. Si el mínimo está en 0, configúralo desde <strong>Productos e insumos → Editar</strong> para recibir avisos antes de agotar existencias.</p>
+  <form method="get" class="form-grid inventory-filters" style="margin-bottom:1rem">
+    <label>Producto o código<input type="search" name="q" value="{{ query }}" placeholder="Buscar producto o insumo"></label>
+    <label>Tipo de producto<select name="tipo"><option value="">Todos</option>{% for value,label in product_kinds %}<option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Existencia<select name="stock"><option value="" {% if not stock_status %}selected{% endif %}>Todos los niveles</option><option value="low" {% if stock_status == "low" %}selected{% endif %}>Solo stock bajo</option></select></label>
+    <label>Tipo de movimiento<select name="movimiento"><option value="">Todos</option>{% for value,label in movement_kinds %}<option value="{{ value }}" {% if movement_kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <div class="form-actions"><button class="button primary" type="submit">Filtrar</button>{% if query or kind or movement_kind or stock_status %}<a class="button secondary" href="{% url 'inventory_list' %}">Limpiar</a>{% endif %}</div>
+  </form>
+  <div class="inventory-section-heading"><h2>Existencias actuales</h2><span class="muted">{{ product_page_obj.paginator.count }} artículo(s)</span></div><div class="table-wrap"><table><thead><tr><th>Producto o insumo</th><th>Tipo</th><th>Existencia</th><th>Mínimo</th><th>Faltante para el mínimo</th><th>Estado / acción</th></tr></thead><tbody>
+    {% for product in products %}<tr><td>{{ product.name }} <small>{{ product.code }}</small></td><td>{{ product.get_kind_display }}</td><td>{{ product.current_stock|bo_quantity }} {{ product.unit }}</td><td>{{ product.minimum_stock|bo_quantity }} {{ product.unit }}</td><td>{% if product.reorder_quantity > 0 %}{{ product.reorder_quantity|bo_quantity }} {{ product.unit }}{% elif product.current_stock == product.minimum_stock %}En el mínimo{% else %}—{% endif %}</td><td>{% if product.current_stock < product.minimum_stock %}<div class="inventory-stock-action"><span class="badge warning">Requiere reposición</span>{% if product.kind == "RAW" %}<a class="button small secondary" href="{% url 'purchase_create' %}?producto={{ product.pk }}&amp;cantidad={{ product.reorder_quantity|bo_quantity }}">Registrar compra</a>{% endif %}</div>{% elif product.current_stock == product.minimum_stock %}<span class="badge warning">En el mínimo</span>{% else %}<span class="badge success">Disponible</span>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="6" class="empty-state">No se encontraron productos.</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if product_page_obj.has_other_pages %}<nav class="inventory-list-pagination" aria-label="Paginación de existencias">{% if product_page_obj.has_previous %}<a class="button secondary" href="?{% if product_query_string %}{{ product_query_string }}&amp;{% endif %}producto_pagina={{ product_page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}<span>Página {{ product_page_obj.number }} de {{ product_page_obj.paginator.num_pages }}</span>{% if product_page_obj.has_next %}<a class="button secondary" href="?{% if product_query_string %}{{ product_query_string }}&amp;{% endif %}producto_pagina={{ product_page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+</section>
+<section class="panel"><div class="inventory-section-heading"><h2>Historial de movimientos</h2><span class="muted">{{ movement_page_obj.paginator.count }} movimiento(s)</span></div><p class="muted">El saldo anterior y resultante se guardan en los movimientos nuevos. Los registros anteriores pueden no tener ese dato.</p><p class="muted">Página {{ movement_page_obj.number }} de {{ movement_page_obj.paginator.num_pages }}.</p>
+  <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Saldo anterior</th><th>Saldo resultante</th><th>Registrado por</th><th>Detalle</th></tr></thead><tbody>
+    {% for movement in movements %}<tr><td>{{ movement.occurred_at|date:"d/m/Y H:i" }}</td><td>{{ movement.product.name }} <small>{{ movement.product.code }}</small></td><td>{{ movement.get_kind_display }}</td><td>{{ movement.quantity|bo_quantity }} {{ movement.product.unit }}</td><td>{% if movement.stock_before != None %}{{ movement.stock_before|bo_quantity }} {{ movement.product.unit }}{% else %}<span class="muted">No registrado</span>{% endif %}</td><td>{% if movement.stock_after != None %}{{ movement.stock_after|bo_quantity }} {{ movement.product.unit }}{% else %}<span class="muted">No registrado</span>{% endif %}</td><td>{{ movement.recorded_by.username }}</td><td>{{ movement.note|default:"—" }}</td></tr>
+    {% empty %}<tr><td colspan="8" class="empty-state">No hay movimientos que coincidan con los filtros.</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if movement_page_obj.has_other_pages %}<nav class="inventory-list-pagination" aria-label="Paginación de movimientos">
+    {% if movement_page_obj.has_previous %}<a class="button secondary" href="?{% if movement_query_string %}{{ movement_query_string }}&amp;{% endif %}movimiento_pagina={{ movement_page_obj.previous_page_number }}">← Anterior</a>{% else %}<span></span>{% endif %}
+    <span>Página {{ movement_page_obj.number }} de {{ movement_page_obj.paginator.num_pages }}</span>
+    {% if movement_page_obj.has_next %}<a class="button secondary" href="?{% if movement_query_string %}{{ movement_query_string }}&amp;{% endif %}movimiento_pagina={{ movement_page_obj.next_page_number }}">Siguiente →</a>{% else %}<span></span>{% endif %}
+  </nav>{% endif %}
+</section>
+{% endblock %}

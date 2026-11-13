@@ -1,0 +1,97 @@
+.receipt-top {
+  border-bottom-color: #79b82a;
+  border-bottom-width: 3px;
+}
+
+.receipt-top .eyebrow {
+  color: #5d9220;
+  font-size: 12px;
+}
+
+.receipt-note {
+  margin: 0;
+  color: #687482;
+  font-size: 13px;
+}
+
+.receipt-number {
+  min-width: 150px;
+}
+
+.receipt-number .badge {
+  margin-top: 8px;
+}
+
+.receipt .badge.danger {
+  background: #fdeceb;
+  color: #a63832;
+}
+
+.receipt-client {
+  padding: 16px 18px;
+  background: #f7faf4;
+  border: 1px solid #e5ebdf;
+  border-radius: 10px;
+}
+
+.receipt table th {
+  background: #f4f8ef;
+}
+
+.receipt-table-wrap {
+  overflow-x: auto;
+}
+
+.receipt table td:nth-child(n + 2),
+.receipt table th:nth-child(n + 2) {
+  text-align: right;
+}
+
+.receipt > h2 {
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.receipt-payments {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.receipt-payments td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .receipt-page {
+    padding: 12px;
+  }
+
+  .receipt-top {
+    flex-direction: column;
+  }
+
+  .receipt-number {
+    text-align: left;
+  }
+
+  .receipt table {
+    min-width: 560px;
+  }
+}
+
+@media print {
+  .receipt-table-wrap {
+    overflow: visible;
+  }
+
+  .receipt-client {
+    background: #fff;
+  }
+
+  .receipt-top,
+  .receipt table th {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

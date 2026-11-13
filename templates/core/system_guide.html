@@ -1,0 +1,24 @@
+{% extends "core/base.html" %}
+{% block title %}Guía del sistema{% endblock %}
+{% block page_heading %}Guía del sistema{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">MATRIPLAST · AYUDA</p><h1>Guía rápida del sistema</h1><p class="muted">Qué hace cada módulo y cómo se conectan las operaciones.</p></div><a class="button secondary" href="{% url 'dashboard' %}">Volver al inicio</a></div>
+
+<section class="guide-intro panel"><div><p class="eyebrow">PROPÓSITO</p><h2>Un solo flujo para controlar la operación</h2><p>El sistema reúne ventas, inventario y producción. Cada operación registrada alimenta los saldos, los reportes y el historial de actividad.</p></div><a class="button primary" href="{% url 'dashboard' %}">Ir al panel principal</a></section>
+
+<section class="guide-section"><div class="guide-section-heading"><p class="eyebrow">MÓDULOS</p><h2>¿Qué puedo hacer aquí?</h2></div><div class="guide-cards">
+  {% if nav_sales %}<article class="panel guide-card"><span class="guide-number">01</span><h3>Ventas y pedidos</h3><p>Registra clientes y pedidos. Cuando el pedido se convierte en venta, se valida y descuenta el stock de productos terminados. Luego puedes registrar pagos y emitir un comprobante de venta.</p><a href="{% url 'sale_list' %}">Abrir ventas →</a></article>{% endif %}
+  {% if nav_inventory %}<article class="panel guide-card"><span class="guide-number">02</span><h3>Inventario</h3><p>Las compras ingresan materias primas; las ventas descuentan productos terminados; y los lotes consumen materiales y aumentan el stock producido. Los ajustes sirven para corregir diferencias físicas.</p><a href="{% url 'inventory_list' %}">Ver existencias y movimientos →</a></article>{% endif %}
+  {% if nav_production %}<article class="panel guide-card"><span class="guide-number">03</span><h3>Producción</h3><p>Configura una receta por producto, planifica un lote y asígnale una máquina y un operario. Al finalizar, registra lo realmente producido y consumido; el sistema valida stock y deja los movimientos relacionados al lote.</p><a href="{% url 'production_list' %}">Abrir lotes →</a></article>{% endif %}
+  {% if nav_reports %}<article class="panel guide-card"><span class="guide-number">04</span><h3>Reportes y pronósticos</h3><p>Los reportes resumen operaciones registradas. El pronóstico estima demanda futura a partir de ventas históricas para apoyar la planificación; es una referencia, no una venta confirmada.</p><a href="{% url 'reports' %}">Ver reportes →</a></article>{% endif %}
+</div></section>
+
+<section class="guide-section"><div class="guide-section-heading"><p class="eyebrow">FLUJOS DE TRABAJO</p><h2>Cómo presentar una operación</h2></div><div class="guide-flows">
+  <article class="panel guide-flow"><h3>Registrar y cobrar una venta</h3><ol><li>Selecciona el cliente y los productos.</li><li>Guarda la venta; se comprueba el stock y se registra la salida.</li><li>Registra el pago completo o parcial y su forma: efectivo, transferencia o QR.</li><li>Abre el comprobante de venta para imprimirlo.</li></ol></article>
+  <article class="panel guide-flow"><h3>Fabricar un producto</h3><ol><li>Configura las materias primas y la receta del producto.</li><li>Crea el lote con cantidad planificada, máquina y operario.</li><li>Inicia el lote y, al terminar, registra cantidades reales.</li><li>El sistema suma el producto terminado, descuenta materiales y deja los movimientos visibles en el detalle del lote.</li></ol></article>
+</div></section>
+
+{% if nav_reports %}<section class="panel guide-forecast"><p class="eyebrow">MACHINE LEARNING</p><h2>Cómo explicar el pronóstico</h2><p>El sistema agrupa las ventas por mes y producto, compara métodos de estimación y muestra el resultado junto con su error histórico cuando hay datos para calcularlo. Un pronóstico bajo o igual a cero puede indicar ventas escasas o irregulares en los datos disponibles; no se debe interpretar como una orden de producir cero.</p><p class="muted">Para mejorar la estimación, registra las ventas reales correctamente y revisa el período y el producto consultados.</p><a class="button secondary" href="{% url 'forecasts' %}">Consultar pronósticos</a></section>{% endif %}
+
+<section class="guide-note"><strong>Acceso y seguridad</strong><p>El menú y las operaciones disponibles dependen del rol asignado a cada usuario. Los cambios relevantes quedan registrados en los logs del sistema.</p></section>
+{% endblock %}

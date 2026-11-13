@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+{% load number_format %}
+{% block extra_head %}<link rel="stylesheet" href="/static/core/production.css?v=2">{% endblock %}
+{% block title %}Finalizar lote {{ lot.pk }}{% endblock %}
+{% block page_heading %}Finalizar lote{% endblock %}
+{% block content %}
+<div class="page-title-row"><div><p class="eyebrow">PRODUCCIÓN · LOTE #{{ lot.pk|stringformat:"06d" }}</p><h1>Finalizar lote</h1><p class="muted">{{ lot.product.name }} · Planificado: {{ lot.planned_quantity|bo_quantity }} {{ lot.product.unit }}{% if lot.machine %} · Máquina: {{ lot.machine.name }}{% endif %}</p></div><a class="button secondary" href="{% url 'production_list' %}">Cancelar</a></div>
+<form method="post" id="finish-lot-form" data-planned-quantity="{{ lot.planned_quantity }}">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <section class="panel form-panel"><div class="form-intro"><span class="form-intro-mark" aria-hidden="true">✓</span><div><h2>Resultado del lote</h2><p class="muted">Al guardar, la producción ingresará al inventario.</p></div></div>
+    <div class="field{% if form.produced_quantity.errors %} has-error{% endif %}"><label for="{{ form.produced_quantity.id_for_label }}">{{ form.produced_quantity.label }}<span class="required">*</span></label>{{ form.produced_quantity }}{% for error in form.produced_quantity.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div id="overproduction-warning" class="production-overrun-warning" {% if form.confirm_overproduction.errors %}data-force-visible{% else %}hidden{% endif %}><strong>La cantidad supera lo planificado.</strong><p>Verifica el número ingresado. Si la producción realmente fue mayor, confirma para continuar.</p><label class="production-overrun-confirm">{{ form.confirm_overproduction }} {{ form.confirm_overproduction.label }}</label>{% for error in form.confirm_overproduction.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+  </section>
+  <section class="panel form-panel"><div class="panel-heading"><div><p class="eyebrow">TRAZABILIDAD</p><h2>Materias primas consumidas</h2><p class="muted">Registra el consumo real del lote. El sistema descontará estas cantidades del stock.</p></div><button class="button secondary" type="button" id="add-consumption">＋ Agregar material</button></div>
+    {{ consumption_formset.management_form }}{% if consumption_formset.non_form_errors %}<div class="alert error">{{ consumption_formset.non_form_errors }}</div>{% endif %}
+    <div class="table-wrap"><table class="consumption-table"><thead><tr><th scope="col">Materia prima</th><th scope="col">Cantidad consumida</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead><tbody id="consumption-rows">{% for row in consumption_formset %}<tr class="consumption-row"><td>{{ row.material }}<small class="stock-hint" data-stock-hint></small>{% for error in row.material.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</td><td>{{ row.quantity }}<small class="stock-warning" data-stock-warning role="status"></small>{% for error in row.quantity.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</td><td class="remove-cell">{{ row.DELETE }}<button class="remove-line" type="button">Quitar</button></td></tr>{% endfor %}</tbody></table></div>
+    <template id="empty-consumption-row"><tr class="consumption-row"><td>{{ consumption_formset.empty_form.material }}<small class="stock-hint" data-stock-hint></small></td><td>{{ consumption_formset.empty_form.quantity }}<small class="stock-warning" data-stock-warning role="status"></small></td><td class="remove-cell">{{ consumption_formset.empty_form.DELETE }}<button class="remove-line" type="button">Quitar</button></td></tr></template>
+    <p class="help-text">Cuando existe una receta, se propone cantidad por unidad × cantidad producida. Puedes corregirla según el consumo real. Para finalizar un lote con producción, registra al menos una materia prima; el sistema validará que haya stock suficiente.</p>
+  </section>
+  <div class="form-actions"><a class="button secondary" href="{% url 'production_list' %}">Cancelar</a><button class="button primary" type="submit">Finalizar lote</button></div>
+</form>
+{{ recipe_rates|json_script:"production-recipe-rates" }}
+{{ material_stock|json_script:"production-material-stock" }}
+<script src="/static/core/production.js?v=3"></script>
+{% endblock %}
